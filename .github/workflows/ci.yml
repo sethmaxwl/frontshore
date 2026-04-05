@@ -108,7 +108,8 @@ jobs:
         run: yarn playwright install --with-deps chromium
 
       - name: Resolve Chromium path
-        run: echo "CHROME_PATH=$(node -e \"const { chromium } = require('@playwright/test'); process.stdout.write(chromium.executablePath())\")" >> "$GITHUB_ENV"
+        run: |
+          echo "CHROME_PATH=$(node -p 'require(\"@playwright/test\").chromium.executablePath()')" >> "$GITHUB_ENV"
 
       - name: Run Lighthouse CI
         run: yarn perf:lighthouse

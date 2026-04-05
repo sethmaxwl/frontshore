@@ -9,7 +9,10 @@ test('navigates between starter routes', async ({ page }) => {
     }),
   ).toBeVisible()
 
-  await page.getByRole('link', { name: /about/i }).click()
+  await page
+    .getByRole('navigation', { name: /primary/i })
+    .getByRole('link', { name: /^about$/i })
+    .click()
 
   await expect(
     page.getByRole('heading', {

@@ -11,7 +11,7 @@ const themeVars: ThemeVars = {
   '--color-border': 'rgba(148, 163, 184, 0.28)',
   '--color-border-strong': 'rgba(71, 85, 105, 0.22)',
   '--color-text': '#475569',
-  '--color-text-muted': '#64748b',
+  '--color-text-muted': '#526074',
   '--color-text-strong': '#0f172a',
   '--color-accent': '#244aff',
   '--color-accent-alt': '#0ea5a4',

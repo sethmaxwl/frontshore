@@ -18,6 +18,7 @@
     "test:watch": "vitest",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
+    "playwright:install": "playwright install --with-deps chromium",
     "playwright:test": "playwright test",
     "playwright:ui": "playwright test --ui",
     "knip": "knip",
