@@ -3,27 +3,27 @@ import type { JSX } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 
-import { HomePage } from './HomePage'
+import { NotFoundPage } from './NotFoundPage'
 
-describe('HomePage', () => {
-  it('renders the page shell content and starter links', () => {
+describe('NotFoundPage', () => {
+  it('renders the fallback copy and a link back home', () => {
     const view: JSX.Element = (
       <MemoryRouter>
-        <HomePage />
+        <NotFoundPage />
       </MemoryRouter>
     )
     render(view)
 
     expect(
       screen.getByRole('heading', {
-        name: /a modern react frontend foundation/i,
+        name: /that route does not exist/i,
       }),
     ).toBeInTheDocument()
 
     expect(
       screen.getByRole('link', {
-        name: /view about/i,
+        name: /go home/i,
       }),
-    ).toHaveAttribute('href', '/about')
+    ).toHaveAttribute('href', '/')
   })
 })

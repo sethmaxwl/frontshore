@@ -1,11 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react-vite'
 
-import { HeroCard } from '@/features/home/components/HeroCard'
+import { QuickLinks } from '@/features/home/components/QuickLinks'
 
 const meta = {
-  title: 'Features/Home/HeroCard',
-  component: HeroCard,
-} satisfies Meta<typeof HeroCard>
+  title: 'Features/Home/QuickLinks',
+  component: QuickLinks,
+} satisfies Meta<typeof QuickLinks>
 
 export default meta
 

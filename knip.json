@@ -1,0 +1,10 @@
+{
+  "$schema": "https://unpkg.com/knip@latest/schema.json",
+  "ignoreFiles": ["src/styles/compiled.d.ts"],
+  "project": [
+    "src/**/*.{ts,tsx}",
+    "tests/**/*.{ts,tsx}",
+    ".storybook/**/*.{ts,tsx}",
+    "scripts/**/*.mjs"
+  ]
+}

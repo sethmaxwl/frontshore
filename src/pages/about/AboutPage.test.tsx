@@ -3,27 +3,27 @@ import type { JSX } from 'react'
 import { MemoryRouter } from 'react-router-dom'
 import { describe, expect, it } from 'vitest'
 
-import { HomePage } from './HomePage'
+import { AboutPage } from './AboutPage'
 
-describe('HomePage', () => {
-  it('renders the page shell content and starter links', () => {
+describe('AboutPage', () => {
+  it('renders the route copy and a link back home', () => {
     const view: JSX.Element = (
       <MemoryRouter>
-        <HomePage />
+        <AboutPage />
       </MemoryRouter>
     )
     render(view)
 
     expect(
       screen.getByRole('heading', {
-        name: /a modern react frontend foundation/i,
+        name: /react router is now part of the app shell/i,
       }),
     ).toBeInTheDocument()
 
     expect(
       screen.getByRole('link', {
-        name: /view about/i,
+        name: /back to home/i,
       }),
-    ).toHaveAttribute('href', '/about')
+    ).toHaveAttribute('href', '/')
   })
 })

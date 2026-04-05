@@ -1,0 +1,2 @@
+#!/usr/bin/env sh
+yarn check && yarn test:coverage && yarn knip

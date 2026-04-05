@@ -1,10 +1,13 @@
 import { StrictMode } from 'react'
+import type { JSX } from 'react'
 import { createRoot } from 'react-dom/client'
-import { App } from '@/app/App'
-import '@/styles/globals.css'
 
-createRoot(document.getElementById('root')!).render(
+import { App } from '@/app/App'
+
+const app: JSX.Element = (
   <StrictMode>
     <App />
-  </StrictMode>,
+  </StrictMode>
 )
+
+createRoot(document.querySelector('#root')!).render(app)

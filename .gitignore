@@ -11,10 +11,13 @@ node_modules
 dist
 dist-ssr
 coverage
+.lighthouseci
 playwright-report
 storybook-static
 test-results
+esbuild-why*.html
 *.local
+.yarn/install-state.gz
 
 # Editor directories and files
 .vscode/*

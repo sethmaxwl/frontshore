@@ -1,0 +1,37 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+    open-pull-requests-limit: 10
+    groups:
+      build-tooling:
+        patterns:
+          - vite
+          - '@vitejs/*'
+          - typescript
+          - eslint
+          - '@eslint/*'
+          - typescript-eslint
+          - prettier
+          - size-limit
+          - '@size-limit/*'
+          - knip
+      testing:
+        patterns:
+          - vitest
+          - '@vitest/*'
+          - '@testing-library/*'
+          - '@playwright/*'
+          - playwright-core
+          - '@axe-core/*'
+      storybook:
+        patterns:
+          - storybook
+          - '@storybook/*'
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly

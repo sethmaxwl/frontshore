@@ -6,52 +6,74 @@
   "scripts": {
     "prepare": "husky",
     "dev": "vite",
+    "generate:page": "node ./scripts/scaffold.mjs page",
+    "generate:feature": "node ./scripts/scaffold.mjs feature",
     "typecheck": "tsc -b",
     "build": "tsc -b && vite build",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings 0",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
     "test:watch": "vitest",
     "storybook": "storybook dev -p 6006",
     "build-storybook": "storybook build",
     "playwright:test": "playwright test",
     "playwright:ui": "playwright test --ui",
-    "check": "yarn typecheck && yarn lint",
+    "knip": "knip",
+    "size": "yarn build && size-limit",
+    "size:why": "yarn build && size-limit --why",
+    "perf:lighthouse": "yarn build && lhci autorun --config=.lighthouserc.json",
+    "check": "yarn typecheck && yarn lint && yarn format:check && yarn knip",
+    "ci:verify": "yarn check && yarn test:coverage && yarn build && yarn build-storybook && yarn knip && size-limit",
     "preview": "vite preview"
   },
   "engines": {
-    "node": ">=20.19.0 || >=22.12.0"
+    "node": "24.14.1"
   },
   "dependencies": {
+    "@compiled/react": "^0.20.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
     "react-router-dom": "^7.14.0"
   },
   "devDependencies": {
+    "@axe-core/playwright": "^4.11.1",
     "@babel/core": "^7.29.0",
+    "@compiled/jest": "^0.11.0",
+    "@compiled/vite-plugin": "^1.1.4",
     "@eslint/js": "^10.0.1",
+    "@lhci/cli": "^0.15.1",
     "@playwright/test": "^1.59.1",
     "@rolldown/plugin-babel": "^0.2.2",
+    "@size-limit/file": "^12.0.1",
+    "@storybook/addon-a11y": "^10.3.4",
     "@storybook/react-vite": "10.3.4",
     "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",
-    "@testing-library/user-event": "^14.6.1",
     "@types/babel__core": "^7.20.5",
+    "@types/eslint-plugin-jsx-a11y": "^6.10.1",
     "@types/node": "^24.12.0",
     "@types/react": "^19.2.14",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.1",
+    "@vitest/coverage-v8": "^4.1.2",
     "babel-plugin-react-compiler": "^1.0.0",
     "eslint": "^10.2.0",
+    "eslint-import-resolver-node": "^0.3.10",
+    "eslint-plugin-import-x": "^4.16.2",
+    "eslint-plugin-jsx-a11y": "^6.10.2",
     "eslint-plugin-react-hooks": "^7.0.1",
     "eslint-plugin-react-refresh": "^0.5.2",
+    "eslint-plugin-unicorn": "^64.0.0",
     "globals": "^17.4.0",
     "husky": "^9.1.7",
     "jsdom": "^29.0.1",
+    "knip": "^6.3.0",
     "lint-staged": "^16.4.0",
     "prettier": "^3.8.1",
+    "size-limit": "^12.0.1",
     "storybook": "10.3.4",
     "typescript": "~6.0.2",
     "typescript-eslint": "^8.58.0",
@@ -60,7 +82,21 @@
   },
   "packageManager": "yarn@4.13.0",
   "lint-staged": {
-    "*.{css,html,json,md,ts,tsx}": "prettier --write",
+    "*.{cjs,css,html,js,json,md,mjs,ts,tsx,yaml,yml}": "prettier --write",
     "*.{ts,tsx}": "eslint --fix"
-  }
+  },
+  "size-limit": [
+    {
+      "name": "app bundle",
+      "path": "dist/assets/*.js",
+      "limit": "100 kB",
+      "message": "Keep the initial JavaScript payload lean by trimming dependencies or splitting code paths when this budget grows."
+    },
+    {
+      "name": "app styles",
+      "path": "dist/assets/*.css",
+      "limit": "5 kB",
+      "message": "Large CSS growth usually points to duplicated styles or oversized global stylesheets."
+    }
+  ]
 }

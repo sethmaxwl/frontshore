@@ -1,9 +1,10 @@
+import type { JSX } from 'react'
+
 import { AppShell } from '@/components/layout/AppShell'
 import { HeroCard } from '@/features/home/components/HeroCard'
 import { QuickLinks } from '@/features/home/components/QuickLinks'
-import '@/features/home/home-page.css'
 
-export function HomePage() {
+export function HomePage(): JSX.Element {
   return (
     <AppShell
       eyebrow="Frontshore starter"
