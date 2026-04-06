@@ -83,7 +83,7 @@
   },
   "packageManager": "yarn@4.13.0",
   "lint-staged": {
-    "*.{cjs,css,html,js,json,md,mjs,ts,tsx,yaml,yml}": "prettier --write",
+    "*.{cjs,css,html,js,json,mjs,ts,tsx,yaml,yml}": "prettier --write",
     "*.{ts,tsx}": "eslint --fix"
   },
   "size-limit": [
