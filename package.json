@@ -24,7 +24,7 @@
     "knip": "knip",
     "size": "yarn build && size-limit",
     "size:why": "yarn build && size-limit --why",
-    "perf:lighthouse": "yarn build && lhci autorun --config=.lighthouserc.json",
+    "perf:lighthouse": "yarn build && node ./scripts/run-lighthouse-ci.mjs",
     "check": "yarn typecheck && yarn lint && yarn format:check && yarn knip",
     "ci:verify": "yarn check && yarn test:coverage && yarn build && yarn build-storybook && yarn knip && size-limit",
     "preview": "vite preview"

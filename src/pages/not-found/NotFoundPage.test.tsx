@@ -25,5 +25,13 @@ describe('NotFoundPage', () => {
         name: /go home/i,
       }),
     ).toHaveAttribute('href', '/')
+
+    expect(document.title).toBe('Frontshore | Not Found')
+    expect(
+      document.head.querySelector('meta[name="description"]'),
+    ).toHaveAttribute(
+      'content',
+      'The requested Frontshore route does not exist yet. Head back home or use this page as the starting point for a branded 404 experience.',
+    )
   })
 })

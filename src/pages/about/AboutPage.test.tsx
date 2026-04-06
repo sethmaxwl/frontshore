@@ -25,5 +25,13 @@ describe('AboutPage', () => {
         name: /back to home/i,
       }),
     ).toHaveAttribute('href', '/')
+
+    expect(document.title).toBe('Frontshore | About')
+    expect(
+      document.head.querySelector('meta[name="description"]'),
+    ).toHaveAttribute(
+      'content',
+      'Learn how Frontshore wires React Router into the app shell with nested routes, shared navigation, and a clean page structure.',
+    )
   })
 })

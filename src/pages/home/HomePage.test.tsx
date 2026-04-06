@@ -25,5 +25,13 @@ describe('HomePage', () => {
         name: /view about/i,
       }),
     ).toHaveAttribute('href', '/about')
+
+    expect(document.title).toBe('Frontshore | Home')
+    expect(
+      document.head.querySelector('meta[name="description"]'),
+    ).toHaveAttribute(
+      'content',
+      'Frontshore is a modern React starter with an app shell, shared layout primitives, and a feature-first structure for scalable frontend work.',
+    )
   })
 })
