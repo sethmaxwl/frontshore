@@ -5,6 +5,7 @@ import compiled from '@compiled/vite-plugin'
 import type { StorybookConfig } from '@storybook/react-vite'
 
 const storybookConfigDir = path.dirname(fileURLToPath(import.meta.url))
+const srcDirectory = path.resolve(storybookConfigDir, '../src')
 
 const config: StorybookConfig = {
   stories: ['../src/**/*.stories.@(ts|tsx)'],
@@ -13,15 +14,15 @@ const config: StorybookConfig = {
     name: '@storybook/react-vite',
     options: {},
   },
-  viteFinal: (config, { configType }) => {
+  viteFinal: (config) => {
     config.resolve ??= {}
     config.resolve.alias = {
       ...config.resolve.alias,
-      '@': path.resolve(storybookConfigDir, '../src'),
+      '@': srcDirectory,
     }
     config.plugins = [
       compiled({
-        extract: configType === 'PRODUCTION',
+        extract: false,
         importReact: false,
       }),
       ...(config.plugins ?? []),

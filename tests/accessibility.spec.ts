@@ -1,10 +1,29 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 
+import { browserCheckSearchQuery } from './fixtures/browserChecks'
+
 const routes = [
-  { name: 'home', path: '/' },
-  { name: 'about', path: '/about' },
-  { name: 'missing', path: '/missing' },
+  {
+    heading: /watch together without the old frontend drag/i,
+    name: 'discover',
+    path: '/',
+  },
+  {
+    heading: /find the next room faster/i,
+    name: 'search',
+    path: `/search?q=${browserCheckSearchQuery}`,
+  },
+  {
+    heading: /^log in$/i,
+    name: 'login',
+    path: '/login',
+  },
+  {
+    heading: /that room drifted off the map/i,
+    name: 'missing',
+    path: '/missing',
+  },
 ]
 
 for (const route of routes) {
@@ -12,7 +31,9 @@ for (const route of routes) {
     page,
   }) => {
     await page.goto(route.path)
-    await expect(page.getByRole('main')).toBeVisible()
+    await expect(
+      page.getByRole('heading', { name: route.heading }),
+    ).toBeVisible()
 
     const results = await new AxeBuilder({ page }).analyze()
     const impactfulViolations = results.violations.filter(

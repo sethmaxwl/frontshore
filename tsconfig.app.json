@@ -33,6 +33,6 @@
     "src",
     ".storybook/**/*.ts",
     ".storybook/**/*.tsx",
-    "typings/compiled.d.ts"
+    "typings/**/*.d.ts"
   ]
 }

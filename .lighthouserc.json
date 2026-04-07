@@ -1,10 +1,11 @@
 {
   "ci": {
     "collect": {
-      "staticDistDir": "./dist",
-      "isSinglePageApplication": true,
       "numberOfRuns": 1,
-      "url": ["http://localhost/", "http://localhost/about"],
+      "startServerCommand": "yarn browser-checks:serve",
+      "startServerReadyPattern": "http://127\\.0\\.0\\.1:4173/",
+      "startServerReadyTimeout": 120000,
+      "url": ["http://127.0.0.1:4173/", "http://127.0.0.1:4173/search?q=watch"],
       "settings": {
         "chromeFlags": "--no-sandbox",
         "preset": "desktop"

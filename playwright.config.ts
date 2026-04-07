@@ -13,7 +13,7 @@ export default defineConfig({
     video: 'retain-on-failure',
   },
   webServer: {
-    command: 'yarn dev --host 127.0.0.1 --port 4173',
+    command: 'yarn browser-checks:serve',
     url: 'http://127.0.0.1:4173',
     reuseExistingServer: !process.env.CI,
     timeout: 120_000,

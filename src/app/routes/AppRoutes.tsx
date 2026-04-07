@@ -1,16 +1,41 @@
-import type { JSX } from 'react'
+import { Suspense, lazy } from 'react'
+import type { JSX, LazyExoticComponent } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
 import { AppProviders } from '@/app/providers/AppProviders'
+import { GuestOnlyRoute, ProtectedRoute } from '@/app/routes/RouteGuards'
+import { RouteFallback } from '@/components/feedback/RouteFallback'
 import { RootLayout } from '@/components/layout/RootLayout'
-import { AboutPage } from '@/pages/about/AboutPage'
-import { HomePage } from '@/pages/home/HomePage'
-import { NotFoundPage } from '@/pages/not-found/NotFoundPage'
 
 const rootLayoutElement: JSX.Element = <RootLayout />
-const homePageElement: JSX.Element = <HomePage />
-const aboutPageElement: JSX.Element = <AboutPage />
-const notFoundPageElement: JSX.Element = <NotFoundPage />
+
+const LandingPage = lazy(() => import('@/pages/rooms/LandingPage'))
+const SearchRoomsPage = lazy(() => import('@/pages/rooms/SearchRoomsPage'))
+const CreateRoomPage = lazy(() => import('@/pages/rooms/CreateRoomPage'))
+const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
+const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
+const VerifyPage = lazy(() => import('@/pages/auth/VerifyPage'))
+const ForgotPasswordPage = lazy(() => import('@/pages/auth/ForgotPasswordPage'))
+const ResetPasswordPage = lazy(() => import('@/pages/auth/ResetPasswordPage'))
+const ResendVerificationPage = lazy(
+  () => import('@/pages/auth/ResendVerificationPage'),
+)
+const ProfilePage = lazy(() => import('@/pages/profile/ProfilePage'))
+const AdminPage = lazy(() => import('@/pages/admin/AdminPage'))
+const RoomPage = lazy(() => import('@/pages/room-session/RoomPage'))
+const NotFoundPage = lazy(() => import('@/pages/errors/NotFoundPage'))
+
+function LazyRouteElement({
+  component: Component,
+}: {
+  component: LazyExoticComponent<() => JSX.Element>
+}): JSX.Element {
+  return (
+    <Suspense fallback={<RouteFallback />}>
+      <Component />
+    </Suspense>
+  )
+}
 
 const router = createBrowserRouter([
   {
@@ -19,17 +44,71 @@ const router = createBrowserRouter([
     children: [
       {
         index: true,
-        element: homePageElement,
+        element: <LazyRouteElement component={LandingPage} />,
       },
       {
-        path: 'about',
-        element: aboutPageElement,
+        path: 'search',
+        element: <LazyRouteElement component={SearchRoomsPage} />,
+      },
+      {
+        element: <GuestOnlyRoute />,
+        children: [
+          {
+            path: 'login',
+            element: <LazyRouteElement component={LoginPage} />,
+          },
+          {
+            path: 'register',
+            element: <LazyRouteElement component={RegisterPage} />,
+          },
+          {
+            path: 'verify',
+            element: <LazyRouteElement component={VerifyPage} />,
+          },
+          {
+            path: 'forgot-password',
+            element: <LazyRouteElement component={ForgotPasswordPage} />,
+          },
+          {
+            path: 'reset',
+            element: <LazyRouteElement component={ResetPasswordPage} />,
+          },
+          {
+            path: 'resend-verification',
+            element: <LazyRouteElement component={ResendVerificationPage} />,
+          },
+        ],
+      },
+      {
+        element: <ProtectedRoute />,
+        children: [
+          {
+            path: 'create-room',
+            element: <LazyRouteElement component={CreateRoomPage} />,
+          },
+          {
+            path: 'profile',
+            element: <LazyRouteElement component={ProfilePage} />,
+          },
+          {
+            path: 'admin',
+            element: <LazyRouteElement component={AdminPage} />,
+          },
+        ],
+      },
+      {
+        path: ':room',
+        element: <LazyRouteElement component={RoomPage} />,
+      },
+      {
+        path: '404',
+        element: <LazyRouteElement component={NotFoundPage} />,
       },
     ],
   },
   {
     path: '*',
-    element: notFoundPageElement,
+    element: <LazyRouteElement component={NotFoundPage} />,
   },
 ])
 
