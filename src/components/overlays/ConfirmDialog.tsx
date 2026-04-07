@@ -91,13 +91,23 @@ export function ConfirmDialog({
                 {cancelLabel}
               </button>
             </Dialog.Close>
-            <button
-              type="button"
-              css={[baseButtonStyles, buttonStyles[tone]]}
-              onClick={onConfirm}
-            >
-              {confirmLabel}
-            </button>
+            {tone === 'primary' ? (
+              <button
+                type="button"
+                css={[baseButtonStyles, buttonStyles.primary]}
+                onClick={onConfirm}
+              >
+                {confirmLabel}
+              </button>
+            ) : (
+              <button
+                type="button"
+                css={[baseButtonStyles, buttonStyles.danger]}
+                onClick={onConfirm}
+              >
+                {confirmLabel}
+              </button>
+            )}
           </div>
         </Dialog.Content>
       </Dialog.Portal>
