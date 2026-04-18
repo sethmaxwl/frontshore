@@ -1,6 +1,6 @@
 import { css } from '@compiled/react'
 import { useQuery } from '@tanstack/react-query'
-import { useDeferredValue, useEffect, useState } from 'react'
+import { useDeferredValue, useState } from 'react'
 import type { FormEvent, JSX } from 'react'
 import { useSearchParams } from 'react-router-dom'
 
@@ -44,11 +44,13 @@ export default function SearchRoomsPage(): JSX.Element {
   const [searchParameters, setSearchParameters] = useSearchParams()
   const query = searchParameters.get('q') ?? ''
   const [draftQuery, setDraftQuery] = useState(query)
+  const [prevQuery, setPrevQuery] = useState(query)
   const deferredQuery = useDeferredValue(query)
 
-  useEffect(() => {
+  if (prevQuery !== query) {
+    setPrevQuery(query)
     setDraftQuery(query)
-  }, [query])
+  }
 
   const roomsQuery = useQuery({
     queryFn: fetchRooms,

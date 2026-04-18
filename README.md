@@ -18,7 +18,7 @@ Frontshore is a React 19 + TypeScript + Vite starter that already includes the t
 
 ## Requirements
 
-- Node `v24.14.1` from [.nvmrc](./.nvmrc)
+- Node `v24.15.0` from [.nvmrc](./.nvmrc)
 - Corepack-enabled Yarn 4
 
 ## Getting Started
