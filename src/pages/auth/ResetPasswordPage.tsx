@@ -1,22 +1,22 @@
-import { css } from '@compiled/react'
-import { zodResolver } from '@hookform/resolvers/zod'
+import {
+  Button,
+  Container,
+  PasswordInput,
+  Paper,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core'
+import { useForm } from '@mantine/form'
+import { notifications } from '@mantine/notifications'
 import { useMutation } from '@tanstack/react-query'
+import { zodResolver } from 'mantine-form-zod-resolver'
 import { useEffect } from 'react'
 import type { JSX } from 'react'
-import { useForm } from 'react-hook-form'
 import { useNavigate, useSearchParams } from 'react-router-dom'
-import { toast } from 'sonner'
 import { z } from 'zod'
 
-import {
-  baseButtonStyles,
-  buttonStyles,
-  fieldStyles,
-} from '../../components/primitives/styles.ts'
-
-import { FormField } from '@/components/forms/FormField'
 import { PageMetadata } from '@/components/metadata/PageMetadata'
-import { AuthCard } from '@/features/auth/components/AuthCard'
 import { getApiErrorMessage } from '@/lib/api/client'
 import { resetPassword } from '@/lib/api/streamshore'
 
@@ -40,22 +40,15 @@ const schema = z
 
 type ResetPasswordValues = z.infer<typeof schema>
 
-const formStyles = css({
-  display: 'grid',
-  gap: '1rem',
-})
-
 export default function ResetPasswordPage(): JSX.Element {
   const navigate = useNavigate()
   const [searchParameters] = useSearchParams()
   const user = searchParameters.get('user')
   const token = searchParameters.get('token')
   const form = useForm<ResetPasswordValues>({
-    defaultValues: {
-      confirmPassword: '',
-      password: '',
-    },
-    resolver: zodResolver(schema),
+    mode: 'uncontrolled',
+    initialValues: { confirmPassword: '', password: '' },
+    validate: zodResolver(schema),
   })
 
   useEffect(() => {
@@ -63,7 +56,7 @@ export default function ResetPasswordPage(): JSX.Element {
       return
     }
 
-    toast.error('Invalid reset link.')
+    notifications.show({ color: 'red', message: 'Invalid reset link.' })
     void navigate('/login', { replace: true })
   }, [navigate, token, user])
 
@@ -76,10 +69,16 @@ export default function ResetPasswordPage(): JSX.Element {
       return resetPassword(user, password, token)
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to reset password'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to reset password'),
+      })
     },
     onSuccess: () => {
-      toast.success('Your password has been reset.')
+      notifications.show({
+        color: 'teal',
+        message: 'Your password has been reset.',
+      })
       void navigate('/login')
     },
   })
@@ -90,47 +89,39 @@ export default function ResetPasswordPage(): JSX.Element {
         description="Reset your Streamshore password using the secure email token."
         title="Streamshore | Reset Password"
       />
-      <AuthCard
-        description="Pick a fresh password so you can get back into your rooms and playlists."
-        title="Reset password"
-      >
-        <form
-          css={formStyles}
-          onSubmit={(event) => {
-            void form.handleSubmit((values) => {
-              mutation.mutate(values)
-            })(event)
-          }}
-        >
-          <FormField
-            error={form.formState.errors.password?.message}
-            label="New password"
-          >
-            <input
-              css={fieldStyles.input}
-              type="password"
-              {...form.register('password')}
-            />
-          </FormField>
-          <FormField
-            error={form.formState.errors.confirmPassword?.message}
-            label="Confirm password"
-          >
-            <input
-              css={fieldStyles.input}
-              type="password"
-              {...form.register('confirmPassword')}
-            />
-          </FormField>
-          <button
-            css={[baseButtonStyles, buttonStyles.primary]}
-            disabled={mutation.isPending}
-            type="submit"
-          >
-            {mutation.isPending ? 'Updating...' : 'Save new password'}
-          </button>
-        </form>
-      </AuthCard>
+      <Container size="xs" py="xl">
+        <Paper p="xl" radius="md" withBorder>
+          <Stack gap="lg">
+            <Stack gap="xs">
+              <Text c="teal" fw={700} size="xs" tt="uppercase">
+                Choose a new password
+              </Text>
+              <Title order={1}>Reset password</Title>
+              <Text c="dimmed">
+                Pick a fresh password so you can get back into your rooms and
+                playlists.
+              </Text>
+            </Stack>
+
+            <form onSubmit={form.onSubmit((values) => mutation.mutate(values))}>
+              <Stack gap="md">
+                <PasswordInput
+                  description="At least 8 characters, with upper, lower, number, and special."
+                  label="New password"
+                  {...form.getInputProps('password')}
+                />
+                <PasswordInput
+                  label="Confirm password"
+                  {...form.getInputProps('confirmPassword')}
+                />
+                <Button loading={mutation.isPending} type="submit" fullWidth>
+                  Save new password
+                </Button>
+              </Stack>
+            </form>
+          </Stack>
+        </Paper>
+      </Container>
     </>
   )
 }

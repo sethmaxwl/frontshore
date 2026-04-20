@@ -1,21 +1,22 @@
-import { css } from '@compiled/react'
-import { zodResolver } from '@hookform/resolvers/zod'
+import {
+  Anchor,
+  Button,
+  Container,
+  PasswordInput,
+  Paper,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+} from '@mantine/core'
+import { useForm } from '@mantine/form'
+import { notifications } from '@mantine/notifications'
 import { useMutation } from '@tanstack/react-query'
+import { zodResolver } from 'mantine-form-zod-resolver'
 import type { JSX } from 'react'
-import { useForm } from 'react-hook-form'
 import { Link } from 'react-router-dom'
-import { toast } from 'sonner'
 import { z } from 'zod'
 
-import {
-  baseButtonStyles,
-  buttonStyles,
-  fieldStyles,
-  inlineLinkStyles,
-} from '../../components/primitives/styles.ts'
-
-import { FormField } from '@/components/forms/FormField'
-import { AuthCard } from '@/features/auth/components/AuthCard'
 import { getApiErrorMessage } from '@/lib/api/client'
 import { registerUser } from '@/lib/api/streamshore'
 
@@ -41,24 +42,16 @@ const schema = z
 
 type RegisterValues = z.infer<typeof schema>
 
-const formStyles = css({
-  display: 'grid',
-  gap: '1rem',
-})
-
-const footerCopyStyles = css({
-  margin: 0,
-})
-
 export default function RegisterPage(): JSX.Element {
   const form = useForm<RegisterValues>({
-    defaultValues: {
+    mode: 'uncontrolled',
+    initialValues: {
       confirmPassword: '',
       displayName: '',
       email: '',
       password: '',
     },
-    resolver: zodResolver(schema),
+    validate: zodResolver(schema),
   })
 
   const registerMutation = useMutation({
@@ -69,79 +62,68 @@ export default function RegisterPage(): JSX.Element {
         username: values.displayName,
       }),
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to register'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to register'),
+      })
     },
     onSuccess: () => {
-      toast.success(
-        'Registration successful. Check your email for a verification link.',
-      )
+      notifications.show({
+        color: 'teal',
+        message:
+          'Registration successful. Check your email for a verification link.',
+      })
       form.reset()
     },
   })
 
   return (
-    <AuthCard
-      description="Create a Streamshore identity so you can manage rooms, playlists, favorites, and friends."
-      footer={
-        <p css={footerCopyStyles}>
-          Already have an account?{' '}
-          <Link css={inlineLinkStyles} to="/login">
-            Sign in
-          </Link>
-          .
-        </p>
-      }
-      title="Create your account"
-    >
-      <form
-        css={formStyles}
-        onSubmit={(event) => {
-          void form.handleSubmit((values) => {
-            registerMutation.mutate(values)
-          })(event)
-        }}
-      >
-        <FormField
-          error={form.formState.errors.email?.message}
-          label="Email address"
-        >
-          <input css={fieldStyles.input} {...form.register('email')} />
-        </FormField>
-        <FormField
-          error={form.formState.errors.displayName?.message}
-          label="Username"
-        >
-          <input css={fieldStyles.input} {...form.register('displayName')} />
-        </FormField>
-        <FormField
-          error={form.formState.errors.password?.message}
-          hint="At least 8 characters, with upper, lower, number, and special."
-          label="Password"
-        >
-          <input
-            css={fieldStyles.input}
-            type="password"
-            {...form.register('password')}
-          />
-        </FormField>
-        <FormField
-          error={form.formState.errors.confirmPassword?.message}
-          label="Confirm password"
-        >
-          <input
-            css={fieldStyles.input}
-            type="password"
-            {...form.register('confirmPassword')}
-          />
-        </FormField>
-        <button
-          css={[baseButtonStyles, buttonStyles.primary]}
-          disabled={registerMutation.isPending}
-          type="submit"
-        >
-          {registerMutation.isPending ? 'Creating account...' : 'Register'}
-        </button>
-      </form>
-    </AuthCard>
+    <Container size="xs" py="xl">
+      <Paper p="xl" radius="md" withBorder>
+        <Stack gap="lg">
+          <Title order={1}>Create your account</Title>
+          <form
+            onSubmit={form.onSubmit((values) =>
+              registerMutation.mutate(values),
+            )}
+          >
+            <Stack gap="md">
+              <TextInput
+                label="Email address"
+                {...form.getInputProps('email')}
+              />
+              <TextInput
+                label="Username"
+                {...form.getInputProps('displayName')}
+              />
+              <PasswordInput
+                description="At least 8 characters, with upper, lower, number, and special."
+                label="Password"
+                {...form.getInputProps('password')}
+              />
+              <PasswordInput
+                label="Confirm password"
+                {...form.getInputProps('confirmPassword')}
+              />
+              <Button
+                loading={registerMutation.isPending}
+                type="submit"
+                fullWidth
+              >
+                Register
+              </Button>
+            </Stack>
+          </form>
+
+          <Text c="dimmed" size="sm">
+            Already have an account?{' '}
+            <Anchor component={Link} to="/login">
+              Sign in
+            </Anchor>
+            .
+          </Text>
+        </Stack>
+      </Paper>
+    </Container>
   )
 }

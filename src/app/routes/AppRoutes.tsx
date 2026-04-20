@@ -1,10 +1,10 @@
+import { Center, Loader } from '@mantine/core'
 import { Suspense, lazy } from 'react'
 import type { JSX, LazyExoticComponent } from 'react'
 import { createBrowserRouter, RouterProvider } from 'react-router-dom'
 
 import { AppProviders } from '@/app/providers/AppProviders'
 import { GuestOnlyRoute, ProtectedRoute } from '@/app/routes/RouteGuards'
-import { RouteFallback } from '@/components/feedback/RouteFallback'
 import { RootLayout } from '@/components/layout/RootLayout'
 
 const rootLayoutElement: JSX.Element = <RootLayout />
@@ -31,7 +31,13 @@ function LazyRouteElement({
   component: LazyExoticComponent<() => JSX.Element>
 }): JSX.Element {
   return (
-    <Suspense fallback={<RouteFallback />}>
+    <Suspense
+      fallback={
+        <Center h="50vh">
+          <Loader />
+        </Center>
+      }
+    >
       <Component />
     </Suspense>
   )

@@ -12,6 +12,7 @@ dist
 dist-ssr
 coverage
 .lighthouseci
+.wolf
 playwright-report
 storybook-static
 test-results

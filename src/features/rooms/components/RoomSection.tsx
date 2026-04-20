@@ -1,27 +1,8 @@
-import { css } from '@compiled/react'
+import { Paper, SimpleGrid, Stack, Text, Title } from '@mantine/core'
 import type { JSX } from 'react'
 
-import { EmptyState } from '@/components/feedback/EmptyState'
 import { RoomCard } from '@/features/rooms/components/RoomCard'
 import type { RoomSummary } from '@/lib/types/streamshore'
-
-const sectionStyles = css({
-  display: 'grid',
-  gap: '1rem',
-})
-
-const titleStyles = css({
-  color: 'var(--color-text-strong)',
-  fontSize: '1.1rem',
-  fontWeight: 800,
-  margin: 0,
-})
-
-const gridStyles = css({
-  display: 'grid',
-  gap: '1rem',
-  gridTemplateColumns: 'repeat(auto-fit, minmax(16rem, 1fr))',
-})
 
 type RoomSectionProps = {
   emptyDescription?: string
@@ -37,10 +18,12 @@ export function RoomSection({
   title,
 }: RoomSectionProps): JSX.Element {
   return (
-    <section css={sectionStyles}>
-      <h2 css={titleStyles}>{title}</h2>
+    <Stack gap="md" component="section">
+      <Title order={2} size="h4">
+        {title}
+      </Title>
       {rooms.length > 0 ? (
-        <div css={gridStyles}>
+        <SimpleGrid cols={{ base: 1, sm: 2, md: 3, lg: 4 }} spacing="md">
           {rooms.map((room) => (
             <RoomCard
               key={room.route}
@@ -48,13 +31,17 @@ export function RoomSection({
               room={room}
             />
           ))}
-        </div>
+        </SimpleGrid>
       ) : (
-        <EmptyState
-          description={emptyDescription}
-          title={`No rooms in ${title}`}
-        />
+        <Paper p="lg" radius="md" withBorder>
+          <Stack gap="xs">
+            <Text fw={600}>No rooms in {title}</Text>
+            <Text c="dimmed" size="sm">
+              {emptyDescription}
+            </Text>
+          </Stack>
+        </Paper>
       )}
-    </section>
+    </Stack>
   )
 }

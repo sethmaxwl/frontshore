@@ -1,30 +1,34 @@
-import { css } from '@compiled/react'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as Tabs from '@radix-ui/react-tabs'
+import {
+  Anchor,
+  Badge,
+  Button,
+  Divider,
+  Group,
+  Paper,
+  PasswordInput,
+  Stack,
+  Tabs,
+  Text,
+  TextInput,
+  Title,
+} from '@mantine/core'
+import { useForm } from '@mantine/form'
+import { modals } from '@mantine/modals'
+import { notifications } from '@mantine/notifications'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import { zodResolver } from 'mantine-form-zod-resolver'
 import { useState } from 'react'
 import type { JSX } from 'react'
-import { useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
-import { toast } from 'sonner'
 import { z } from 'zod'
 
-import {
-  baseButtonStyles,
-  buttonStyles,
-  fieldStyles,
-  inlineLinkStyles,
-} from '../../components/primitives/styles.ts'
-
 import { useAuth } from '@/app/providers/AuthProvider'
-import { FormField } from '@/components/forms/FormField'
-import { AppShell } from '@/components/layout/AppShell'
+import { PageHero } from '@/components/layout/PageHero'
 import { PageMetadata } from '@/components/metadata/PageMetadata'
-import { ConfirmDialog } from '@/components/overlays/ConfirmDialog'
-import { SurfaceCard } from '@/components/primitives/SurfaceCard'
 import { RoomSection } from '@/features/rooms/components/RoomSection'
 import { getApiErrorMessage } from '@/lib/api/client'
 import {
+  addVideoToPlaylist,
   changePassword,
   createFriendRequest,
   createPlaylist,
@@ -39,7 +43,6 @@ import {
   fetchRooms,
   fetchUserTracking,
   removeVideoFromPlaylist,
-  addVideoToPlaylist,
   renamePlaylist,
   updateFriendRelationship,
 } from '@/lib/api/streamshore'
@@ -49,117 +52,6 @@ import type {
   RoomSummary,
 } from '@/lib/types/streamshore'
 import { sortRoomsByActivity } from '@/lib/utils/rooms'
-
-const tabListStyles = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '0.75rem',
-})
-
-const tabTriggerStyles = css({
-  alignItems: 'center',
-  appearance: 'none',
-  background: 'rgba(8, 17, 30, 0.48)',
-  border: '1px solid var(--color-border)',
-  borderRadius: '999px',
-  color: 'var(--color-text-muted)',
-  cursor: 'pointer',
-  display: 'inline-flex',
-  fontFamily: 'inherit',
-  fontSize: '0.95rem',
-  fontWeight: 700,
-  justifyContent: 'center',
-  minHeight: '2.9rem',
-  padding: '0.7rem 1rem',
-  '&[data-state="active"]': {
-    background: 'rgba(34, 211, 238, 0.14)',
-    borderColor: 'rgba(34, 211, 238, 0.24)',
-    color: 'var(--color-text-strong)',
-  },
-})
-
-const tabContentStyles = css({
-  display: 'grid',
-  gap: '1rem',
-  marginTop: '1rem',
-})
-
-const cardListStyles = css({
-  display: 'grid',
-  gap: '1rem',
-})
-
-const rowStyles = css({
-  alignItems: 'center',
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '0.75rem',
-  justifyContent: 'space-between',
-})
-
-const headingStyles = css({
-  color: 'var(--color-text-strong)',
-  fontSize: '1rem',
-  fontWeight: 800,
-  margin: 0,
-})
-
-const subcopyStyles = css({
-  color: 'var(--color-text-muted)',
-  margin: 0,
-})
-
-const stackedFormStyles = css({
-  display: 'grid',
-  gap: '0.9rem',
-})
-
-const listItemStyles = css({
-  alignItems: 'center',
-  borderTop: '1px solid rgba(148, 163, 184, 0.12)',
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '0.75rem',
-  justifyContent: 'space-between',
-  paddingTop: '0.9rem',
-})
-
-const valueStackStyles = css({
-  display: 'grid',
-  gap: '0.2rem',
-})
-
-const valueTitleStyles = css({
-  color: 'var(--color-text-strong)',
-  fontWeight: 700,
-  margin: 0,
-})
-
-const valueMetaStyles = css({
-  color: 'var(--color-text-muted)',
-  margin: 0,
-})
-
-const actionWrapStyles = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '0.55rem',
-})
-
-const identityCardStyles = css({
-  alignItems: 'center',
-  display: 'flex',
-  gap: '1rem',
-  justifyContent: 'space-between',
-  padding: '1rem',
-})
-
-const identityValueStyles = css({
-  color: 'var(--color-text-strong)',
-  fontSize: '1.3rem',
-  fontWeight: 800,
-  margin: 0,
-})
 
 type ProfileData = {
   favoriteRooms: RoomSummary[]
@@ -202,68 +94,67 @@ function FriendRow({
   const [nickname, setNickname] = useState(friend.nickname ?? '')
 
   return (
-    <div css={listItemStyles}>
-      <div css={valueStackStyles}>
-        <p css={valueTitleStyles}>
+    <Group justify="space-between" wrap="wrap" gap="sm" align="flex-start">
+      <Stack gap={2}>
+        <Text fw={700}>
           {friend.nickname ?? friend.friendee}
           {friend.tracking.online
             ? ` • Online in ${friend.tracking.room ?? 'a room'}`
             : ''}
-        </p>
-        <p css={valueMetaStyles}>
+        </Text>
+        <Text c="dimmed" size="sm">
           {friend.nickname ? `${friend.friendee} • ` : ''}
           Hosting {friend.rooms.length} room
           {friend.rooms.length === 1 ? '' : 's'}
-        </p>
-      </div>
-      <div css={actionWrapStyles}>
+        </Text>
+      </Stack>
+      <Group gap="xs" wrap="wrap" align="flex-end">
         {friend.tracking.online && friend.tracking.room ? (
-          <Link
-            css={[baseButtonStyles, buttonStyles.secondary]}
+          <Button
+            component={Link}
             to={`/${friend.tracking.room}`}
+            size="xs"
+            variant="default"
           >
             Join room
-          </Link>
+          </Button>
         ) : null}
-        <input
-          css={fieldStyles.input}
-          onChange={(event) => {
-            setNickname(event.currentTarget.value)
-          }}
+        <TextInput
+          aria-label={`Nickname for ${friend.friendee}`}
+          onChange={(event) => setNickname(event.currentTarget.value)}
           placeholder="Nickname"
+          size="xs"
           value={nickname}
         />
-        <button
-          css={[baseButtonStyles, buttonStyles.secondary]}
-          onClick={() => {
-            onSetNickname(friend.friendee, nickname)
-          }}
+        <Button
+          onClick={() => onSetNickname(friend.friendee, nickname)}
+          size="xs"
+          variant="default"
           type="button"
         >
           Save nickname
-        </button>
+        </Button>
         {friend.nickname ? (
-          <button
-            css={[baseButtonStyles, buttonStyles.secondary]}
-            onClick={() => {
-              onDeleteNickname(friend.friendee)
-            }}
+          <Button
+            onClick={() => onDeleteNickname(friend.friendee)}
+            size="xs"
+            variant="default"
             type="button"
           >
             Remove nickname
-          </button>
+          </Button>
         ) : null}
-        <button
-          css={[baseButtonStyles, buttonStyles.danger]}
-          onClick={() => {
-            onUnfriend(friend.friendee)
-          }}
+        <Button
+          color="red"
+          onClick={() => onUnfriend(friend.friendee)}
+          size="xs"
+          variant="light"
           type="button"
         >
           Unfriend
-        </button>
-      </div>
-    </div>
+        </Button>
+      </Group>
+    </Group>
   )
 }
 
@@ -286,58 +177,52 @@ function PlaylistCard({
   const [videoUrl, setVideoUrl] = useState('')
 
   return (
-    <SurfaceCard as="section">
-      <div css={cardListStyles}>
-        <div css={rowStyles}>
-          <div css={valueStackStyles}>
-            <p css={valueTitleStyles}>{playlist.name}</p>
-            <p css={valueMetaStyles}>
+    <Paper p="md" radius="md" withBorder component="section">
+      <Stack gap="md">
+        <Group justify="space-between" wrap="wrap" gap="sm" align="flex-start">
+          <Stack gap={2}>
+            <Text fw={700}>{playlist.name}</Text>
+            <Text c="dimmed" size="sm">
               {playlist.videos.length} video
               {playlist.videos.length === 1 ? '' : 's'}
-            </p>
-          </div>
-          <div css={actionWrapStyles}>
-            <input
-              css={fieldStyles.input}
-              onChange={(event) => {
-                setNextTitle(event.currentTarget.value)
-              }}
+            </Text>
+          </Stack>
+          <Group gap="xs" wrap="wrap">
+            <TextInput
+              aria-label={`Rename ${playlist.name}`}
+              onChange={(event) => setNextTitle(event.currentTarget.value)}
+              size="xs"
               value={nextTitle}
             />
-            <button
-              css={[baseButtonStyles, buttonStyles.secondary]}
-              onClick={() => {
-                onRename(playlist.name, nextTitle)
-              }}
+            <Button
+              onClick={() => onRename(playlist.name, nextTitle)}
+              size="xs"
+              variant="default"
               type="button"
             >
               Rename
-            </button>
-            <button
-              css={[baseButtonStyles, buttonStyles.danger]}
-              onClick={() => {
-                onDelete(playlist.name)
-              }}
+            </Button>
+            <Button
+              color="red"
+              onClick={() => onDelete(playlist.name)}
+              size="xs"
+              variant="light"
               type="button"
             >
               Delete
-            </button>
-          </div>
-        </div>
+            </Button>
+          </Group>
+        </Group>
 
-        <div css={stackedFormStyles}>
-          <FormField label="Add a YouTube URL">
-            <input
-              css={fieldStyles.input}
-              onChange={(event) => {
-                setVideoUrl(event.currentTarget.value)
-              }}
-              placeholder="https://youtube.com/watch?v=..."
-              value={videoUrl}
-            />
-          </FormField>
-          <button
-            css={[baseButtonStyles, buttonStyles.primary]}
+        <Group gap="sm" align="flex-end" wrap="wrap">
+          <TextInput
+            label="Add a YouTube URL"
+            onChange={(event) => setVideoUrl(event.currentTarget.value)}
+            placeholder="https://youtube.com/watch?v=..."
+            style={{ flex: 1, minWidth: 200 }}
+            value={videoUrl}
+          />
+          <Button
             onClick={() => {
               onAddVideo(playlist.name, videoUrl)
               setVideoUrl('')
@@ -345,30 +230,40 @@ function PlaylistCard({
             type="button"
           >
             Add video
-          </button>
-        </div>
+          </Button>
+        </Group>
 
-        <div css={cardListStyles}>
-          {playlist.videos.map((video) => (
-            <div key={`${playlist.name}-${video.id}`} css={listItemStyles}>
-              <div css={valueStackStyles}>
-                <p css={valueTitleStyles}>{video.title}</p>
-                <p css={valueMetaStyles}>{video.channel}</p>
-              </div>
-              <button
-                css={[baseButtonStyles, buttonStyles.danger]}
-                onClick={() => {
-                  onDeleteVideo(playlist.name, video.id)
-                }}
-                type="button"
+        <Stack gap="sm">
+          {playlist.videos.map((video, index) => (
+            <div key={`${playlist.name}-${video.id}`}>
+              {index > 0 ? <Divider mb="sm" /> : null}
+              <Group
+                justify="space-between"
+                wrap="wrap"
+                gap="sm"
+                align="flex-start"
               >
-                Remove
-              </button>
+                <Stack gap={2}>
+                  <Text fw={700}>{video.title}</Text>
+                  <Text c="dimmed" size="sm">
+                    {video.channel}
+                  </Text>
+                </Stack>
+                <Button
+                  color="red"
+                  onClick={() => onDeleteVideo(playlist.name, video.id)}
+                  size="xs"
+                  variant="light"
+                  type="button"
+                >
+                  Remove
+                </Button>
+              </Group>
             </div>
           ))}
-        </div>
-      </div>
-    </SurfaceCard>
+        </Stack>
+      </Stack>
+    </Paper>
   )
 }
 
@@ -378,13 +273,10 @@ export default function ProfilePage(): JSX.Element {
   const { logout, session } = useAuth()
   const [friendInput, setFriendInput] = useState('')
   const [playlistName, setPlaylistName] = useState('')
-  const [accountDialogOpen, setAccountDialogOpen] = useState(false)
   const passwordForm = useForm<PasswordValues>({
-    defaultValues: {
-      confirmPassword: '',
-      password: '',
-    },
-    resolver: zodResolver(passwordSchema),
+    mode: 'uncontrolled',
+    initialValues: { confirmPassword: '', password: '' },
+    validate: zodResolver(passwordSchema),
   })
 
   const username = session?.user ?? ''
@@ -446,12 +338,15 @@ export default function ProfilePage(): JSX.Element {
     mutationFn: async (targetFriend: string) =>
       createFriendRequest(username, targetFriend),
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to send friend request'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to send friend request'),
+      })
     },
     onSuccess: () => {
       invalidateProfileData()
       setFriendInput('')
-      toast.success('Friend request sent.')
+      notifications.show({ color: 'teal', message: 'Friend request sent.' })
     },
   })
 
@@ -461,7 +356,10 @@ export default function ProfilePage(): JSX.Element {
       friend: string
     }) => updateFriendRelationship(username, payload.friend, payload.body),
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to update friend'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to update friend'),
+      })
     },
     onSuccess: () => {
       invalidateProfileData()
@@ -471,23 +369,29 @@ export default function ProfilePage(): JSX.Element {
   const unfriendMutation = useMutation({
     mutationFn: async (friend: string) => deleteFriend(username, friend),
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to remove friend'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to remove friend'),
+      })
     },
     onSuccess: () => {
       invalidateProfileData()
-      toast.success('Friend removed.')
+      notifications.show({ color: 'teal', message: 'Friend removed.' })
     },
   })
 
   const createPlaylistMutation = useMutation({
     mutationFn: async (name: string) => createPlaylist(username, name),
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to create playlist'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to create playlist'),
+      })
     },
     onSuccess: () => {
       invalidateProfileData()
       setPlaylistName('')
-      toast.success('Playlist created.')
+      notifications.show({ color: 'teal', message: 'Playlist created.' })
     },
   })
 
@@ -495,22 +399,28 @@ export default function ProfilePage(): JSX.Element {
     mutationFn: async (payload: { currentName: string; nextName: string }) =>
       renamePlaylist(username, payload.currentName, payload.nextName),
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to rename playlist'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to rename playlist'),
+      })
     },
     onSuccess: () => {
       invalidateProfileData()
-      toast.success('Playlist updated.')
+      notifications.show({ color: 'teal', message: 'Playlist updated.' })
     },
   })
 
   const deletePlaylistMutation = useMutation({
     mutationFn: async (name: string) => deletePlaylist(username, name),
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to delete playlist'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to delete playlist'),
+      })
     },
     onSuccess: () => {
       invalidateProfileData()
-      toast.success('Playlist deleted.')
+      notifications.show({ color: 'teal', message: 'Playlist deleted.' })
     },
   })
 
@@ -527,11 +437,17 @@ export default function ProfilePage(): JSX.Element {
       return addVideoToPlaylist(username, payload.playlistName, videoId)
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to add video'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to add video'),
+      })
     },
     onSuccess: () => {
       invalidateProfileData()
-      toast.success('Video added to playlist.')
+      notifications.show({
+        color: 'teal',
+        message: 'Video added to playlist.',
+      })
     },
   })
 
@@ -539,22 +455,31 @@ export default function ProfilePage(): JSX.Element {
     mutationFn: async (payload: { playlistName: string; videoId: string }) =>
       removeVideoFromPlaylist(username, payload.playlistName, payload.videoId),
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to remove video'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to remove video'),
+      })
     },
     onSuccess: () => {
       invalidateProfileData()
-      toast.success('Video removed from playlist.')
+      notifications.show({
+        color: 'teal',
+        message: 'Video removed from playlist.',
+      })
     },
   })
 
   const deleteRoomMutation = useMutation({
     mutationFn: deleteRoom,
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to delete room'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to delete room'),
+      })
     },
     onSuccess: () => {
       invalidateProfileData()
-      toast.success('Room deleted.')
+      notifications.show({ color: 'teal', message: 'Room deleted.' })
     },
   })
 
@@ -562,18 +487,24 @@ export default function ProfilePage(): JSX.Element {
     mutationFn: async ({ password }: PasswordValues) =>
       changePassword(username, password),
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to change password'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to change password'),
+      })
     },
     onSuccess: () => {
       passwordForm.reset()
-      toast.success('Password updated.')
+      notifications.show({ color: 'teal', message: 'Password updated.' })
     },
   })
 
   const deleteAccountMutation = useMutation({
     mutationFn: async () => deleteAccount(username),
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to delete account'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to delete account'),
+      })
     },
     onSuccess: () => {
       logout()
@@ -589,352 +520,360 @@ export default function ProfilePage(): JSX.Element {
     requests: [],
   }
 
+  const openDeleteAccountConfirm = (): void => {
+    modals.openConfirmModal({
+      title: 'Delete your Streamshore account?',
+      children: 'This action cannot be undone.',
+      labels: { cancel: 'Cancel', confirm: 'Delete account' },
+      confirmProps: { color: 'red' },
+      onConfirm: () => deleteAccountMutation.mutate(),
+    })
+  }
+
   return (
     <>
       <PageMetadata
         description="Manage your rooms, friendships, playlists, and account settings on Streamshore."
         title="Streamshore | Profile"
       />
-      <AppShell
+      <PageHero
         eyebrow="Profile control room"
         title={username}
         description="Everything tied to your account lives here: favorites, playlists, social graph, room ownership, and account settings."
       >
-        <div css={cardListStyles}>
-          <SurfaceCard as="section">
-            <div css={identityCardStyles}>
-              <div css={valueStackStyles}>
-                <p css={identityValueStyles}>{username}</p>
-                <p css={valueMetaStyles}>
-                  {session?.admin
-                    ? 'Administrator access enabled'
-                    : 'Standard room operator'}
-                </p>
-              </div>
-              <Link
-                css={[baseButtonStyles, buttonStyles.primary]}
-                to="/create-room"
-              >
+        <Stack gap="md">
+          <Paper p="lg" radius="md" withBorder>
+            <Group justify="space-between" wrap="wrap" gap="md">
+              <Stack gap={4}>
+                <Title order={2} size="h3">
+                  {username}
+                </Title>
+                <Group gap="xs">
+                  {session?.admin ? (
+                    <Badge color="teal" variant="light">
+                      Administrator
+                    </Badge>
+                  ) : (
+                    <Badge variant="light">Room operator</Badge>
+                  )}
+                </Group>
+              </Stack>
+              <Button component={Link} to="/create-room" size="md">
                 Create a room
-              </Link>
-            </div>
-          </SurfaceCard>
+              </Button>
+            </Group>
+          </Paper>
 
-          <Tabs.Root defaultValue="rooms">
-            <Tabs.List css={tabListStyles}>
-              <Tabs.Trigger css={tabTriggerStyles} value="rooms">
-                Rooms
-              </Tabs.Trigger>
-              <Tabs.Trigger css={tabTriggerStyles} value="friends">
-                Friends
-              </Tabs.Trigger>
-              <Tabs.Trigger css={tabTriggerStyles} value="playlists">
-                Playlists
-              </Tabs.Trigger>
-              <Tabs.Trigger css={tabTriggerStyles} value="settings">
-                Settings
-              </Tabs.Trigger>
+          <Tabs defaultValue="rooms">
+            <Tabs.List>
+              <Tabs.Tab value="rooms">Rooms</Tabs.Tab>
+              <Tabs.Tab value="friends">Friends</Tabs.Tab>
+              <Tabs.Tab value="playlists">Playlists</Tabs.Tab>
+              <Tabs.Tab value="settings">Settings</Tabs.Tab>
             </Tabs.List>
 
-            <Tabs.Content css={tabContentStyles} value="rooms">
-              <RoomSection
-                rooms={profileData.favoriteRooms}
-                title="Favorite rooms"
-              />
-              <SurfaceCard as="section">
-                <div css={cardListStyles}>
-                  <div css={rowStyles}>
-                    <div css={valueStackStyles}>
-                      <p css={headingStyles}>Rooms you own</p>
-                      <p css={subcopyStyles}>
+            <Tabs.Panel value="rooms" pt="md">
+              <Stack gap="md">
+                <RoomSection
+                  rooms={profileData.favoriteRooms}
+                  title="Favorite rooms"
+                />
+                <Paper p="md" radius="md" withBorder component="section">
+                  <Stack gap="md">
+                    <Stack gap={2}>
+                      <Text fw={700}>Rooms you own</Text>
+                      <Text c="dimmed" size="sm">
                         Delete stale rooms or jump back into active ones.
-                      </p>
-                    </div>
-                  </div>
-                  {profileData.myRooms.map((room) => (
-                    <div key={room.route} css={listItemStyles}>
-                      <div css={valueStackStyles}>
-                        <p css={valueTitleStyles}>{room.name}</p>
-                        <p css={valueMetaStyles}>
-                          {room.users} users •{' '}
-                          {room.privacy === 0 ? 'Public' : 'Private'}
-                        </p>
-                      </div>
-                      <div css={actionWrapStyles}>
-                        <Link
-                          css={[baseButtonStyles, buttonStyles.secondary]}
-                          to={`/${room.route}`}
+                      </Text>
+                    </Stack>
+                    {profileData.myRooms.map((room, index) => (
+                      <div key={room.route}>
+                        {index > 0 ? <Divider mb="sm" /> : null}
+                        <Group
+                          justify="space-between"
+                          wrap="wrap"
+                          gap="sm"
+                          align="flex-start"
                         >
-                          Open room
-                        </Link>
-                        <button
-                          css={[baseButtonStyles, buttonStyles.danger]}
-                          onClick={() => {
-                            deleteRoomMutation.mutate(room.route)
-                          }}
-                          type="button"
-                        >
-                          Delete
-                        </button>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              </SurfaceCard>
-            </Tabs.Content>
-
-            <Tabs.Content css={tabContentStyles} value="friends">
-              <SurfaceCard as="section">
-                <div css={cardListStyles}>
-                  <div css={rowStyles}>
-                    <div css={valueStackStyles}>
-                      <p css={headingStyles}>Add a friend</p>
-                      <p css={subcopyStyles}>Send a request by username.</p>
-                    </div>
-                  </div>
-                  <div css={actionWrapStyles}>
-                    <input
-                      css={fieldStyles.input}
-                      onChange={(event) => {
-                        setFriendInput(event.currentTarget.value)
-                      }}
-                      placeholder="Friend username"
-                      value={friendInput}
-                    />
-                    <button
-                      css={[baseButtonStyles, buttonStyles.primary]}
-                      onClick={() => {
-                        if (friendInput.trim().length > 0) {
-                          addFriendMutation.mutate(friendInput.trim())
-                        }
-                      }}
-                      type="button"
-                    >
-                      Send request
-                    </button>
-                  </div>
-                </div>
-              </SurfaceCard>
-
-              {profileData.requests.length > 0 ? (
-                <SurfaceCard as="section">
-                  <div css={cardListStyles}>
-                    <p css={headingStyles}>Pending requests</p>
-                    {profileData.requests.map((request) => (
-                      <div key={request.friendee} css={listItemStyles}>
-                        <div css={valueStackStyles}>
-                          <p css={valueTitleStyles}>{request.friendee}</p>
-                          <p css={valueMetaStyles}>Awaiting your decision</p>
-                        </div>
-                        <div css={actionWrapStyles}>
-                          <button
-                            css={[baseButtonStyles, buttonStyles.primary]}
-                            onClick={() => {
-                              updateFriendMutation.mutate({
-                                body: { accepted: '1' },
-                                friend: request.friendee,
-                              })
-                            }}
-                            type="button"
-                          >
-                            Accept
-                          </button>
-                          <button
-                            css={[baseButtonStyles, buttonStyles.secondary]}
-                            onClick={() => {
-                              updateFriendMutation.mutate({
-                                body: { accepted: '0' },
-                                friend: request.friendee,
-                              })
-                            }}
-                            type="button"
-                          >
-                            Decline
-                          </button>
-                        </div>
+                          <Stack gap={2}>
+                            <Text fw={700}>{room.name}</Text>
+                            <Text c="dimmed" size="sm">
+                              {room.users} users •{' '}
+                              {room.privacy === 0 ? 'Public' : 'Private'}
+                            </Text>
+                          </Stack>
+                          <Group gap="xs">
+                            <Button
+                              component={Link}
+                              to={`/${room.route}`}
+                              size="xs"
+                              variant="default"
+                            >
+                              Open room
+                            </Button>
+                            <Button
+                              color="red"
+                              onClick={() =>
+                                deleteRoomMutation.mutate(room.route)
+                              }
+                              size="xs"
+                              variant="light"
+                              type="button"
+                            >
+                              Delete
+                            </Button>
+                          </Group>
+                        </Group>
                       </div>
                     ))}
-                  </div>
-                </SurfaceCard>
-              ) : null}
+                  </Stack>
+                </Paper>
+              </Stack>
+            </Tabs.Panel>
 
-              <SurfaceCard as="section">
-                <div css={cardListStyles}>
-                  <p css={headingStyles}>Your friends</p>
-                  {profileData.friends.map((friend) => (
-                    <FriendRow
-                      key={friend.friendee}
-                      friend={friend}
-                      onDeleteNickname={(friendName) => {
-                        updateFriendMutation.mutate({
-                          body: { nickname: null },
-                          friend: friendName,
-                        })
-                      }}
-                      onSetNickname={(friendName, nickname) => {
-                        updateFriendMutation.mutate({
-                          body: { nickname },
-                          friend: friendName,
-                        })
-                      }}
-                      onUnfriend={(friendName) => {
-                        unfriendMutation.mutate(friendName)
-                      }}
-                    />
-                  ))}
-                </div>
-              </SurfaceCard>
-            </Tabs.Content>
+            <Tabs.Panel value="friends" pt="md">
+              <Stack gap="md">
+                <Paper p="md" radius="md" withBorder component="section">
+                  <Stack gap="md">
+                    <Stack gap={2}>
+                      <Text fw={700}>Add a friend</Text>
+                      <Text c="dimmed" size="sm">
+                        Send a request by username.
+                      </Text>
+                    </Stack>
+                    <Group gap="sm" align="flex-end" wrap="wrap">
+                      <TextInput
+                        aria-label="Friend username"
+                        onChange={(event) =>
+                          setFriendInput(event.currentTarget.value)
+                        }
+                        placeholder="Friend username"
+                        style={{ flex: 1, minWidth: 200 }}
+                        value={friendInput}
+                      />
+                      <Button
+                        onClick={() => {
+                          if (friendInput.trim().length > 0) {
+                            addFriendMutation.mutate(friendInput.trim())
+                          }
+                        }}
+                        type="button"
+                      >
+                        Send request
+                      </Button>
+                    </Group>
+                  </Stack>
+                </Paper>
 
-            <Tabs.Content css={tabContentStyles} value="playlists">
-              <SurfaceCard as="section">
-                <div css={cardListStyles}>
-                  <div css={rowStyles}>
-                    <div css={valueStackStyles}>
-                      <p css={headingStyles}>Create a playlist</p>
-                      <p css={subcopyStyles}>
+                {profileData.requests.length > 0 ? (
+                  <Paper p="md" radius="md" withBorder component="section">
+                    <Stack gap="md">
+                      <Text fw={700}>Pending requests</Text>
+                      {profileData.requests.map((request, index) => (
+                        <div key={request.friendee}>
+                          {index > 0 ? <Divider mb="sm" /> : null}
+                          <Group
+                            justify="space-between"
+                            wrap="wrap"
+                            gap="sm"
+                            align="flex-start"
+                          >
+                            <Stack gap={2}>
+                              <Text fw={700}>{request.friendee}</Text>
+                              <Text c="dimmed" size="sm">
+                                Awaiting your decision
+                              </Text>
+                            </Stack>
+                            <Group gap="xs">
+                              <Button
+                                onClick={() =>
+                                  updateFriendMutation.mutate({
+                                    body: { accepted: '1' },
+                                    friend: request.friendee,
+                                  })
+                                }
+                                size="xs"
+                                type="button"
+                              >
+                                Accept
+                              </Button>
+                              <Button
+                                onClick={() =>
+                                  updateFriendMutation.mutate({
+                                    body: { accepted: '0' },
+                                    friend: request.friendee,
+                                  })
+                                }
+                                size="xs"
+                                variant="default"
+                                type="button"
+                              >
+                                Decline
+                              </Button>
+                            </Group>
+                          </Group>
+                        </div>
+                      ))}
+                    </Stack>
+                  </Paper>
+                ) : null}
+
+                <Paper p="md" radius="md" withBorder component="section">
+                  <Stack gap="md">
+                    <Text fw={700}>Your friends</Text>
+                    {profileData.friends.map((friend, index) => (
+                      <div key={friend.friendee}>
+                        {index > 0 ? <Divider mb="sm" /> : null}
+                        <FriendRow
+                          friend={friend}
+                          onDeleteNickname={(friendName) => {
+                            updateFriendMutation.mutate({
+                              body: { nickname: null },
+                              friend: friendName,
+                            })
+                          }}
+                          onSetNickname={(friendName, nickname) => {
+                            updateFriendMutation.mutate({
+                              body: { nickname },
+                              friend: friendName,
+                            })
+                          }}
+                          onUnfriend={(friendName) => {
+                            unfriendMutation.mutate(friendName)
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </Stack>
+                </Paper>
+              </Stack>
+            </Tabs.Panel>
+
+            <Tabs.Panel value="playlists" pt="md">
+              <Stack gap="md">
+                <Paper p="md" radius="md" withBorder component="section">
+                  <Stack gap="md">
+                    <Stack gap={2}>
+                      <Text fw={700}>Create a playlist</Text>
+                      <Text c="dimmed" size="sm">
                         Playlists stay available when you add queue items in a
                         room.
-                      </p>
-                    </div>
-                  </div>
-                  <div css={actionWrapStyles}>
-                    <input
-                      css={fieldStyles.input}
-                      onChange={(event) => {
-                        setPlaylistName(event.currentTarget.value)
-                      }}
-                      placeholder="Playlist title"
-                      value={playlistName}
-                    />
-                    <button
-                      css={[baseButtonStyles, buttonStyles.primary]}
-                      onClick={() => {
-                        if (playlistName.trim().length > 0) {
-                          createPlaylistMutation.mutate(playlistName.trim())
+                      </Text>
+                    </Stack>
+                    <Group gap="sm" align="flex-end" wrap="wrap">
+                      <TextInput
+                        aria-label="Playlist title"
+                        onChange={(event) =>
+                          setPlaylistName(event.currentTarget.value)
                         }
-                      }}
-                      type="button"
-                    >
-                      Create playlist
-                    </button>
-                  </div>
-                </div>
-              </SurfaceCard>
-
-              {profileData.playlists.map((playlist) => (
-                <PlaylistCard
-                  key={playlist.name}
-                  onAddVideo={(playlistName, url) => {
-                    if (url.trim().length > 0) {
-                      addVideoMutation.mutate({ playlistName, url })
-                    }
-                  }}
-                  onDelete={(playlistName) => {
-                    deletePlaylistMutation.mutate(playlistName)
-                  }}
-                  onDeleteVideo={(playlistName, videoId) => {
-                    removeVideoMutation.mutate({ playlistName, videoId })
-                  }}
-                  onRename={(playlistName, nextName) => {
-                    if (nextName.trim().length > 0) {
-                      renamePlaylistMutation.mutate({
-                        currentName: playlistName,
-                        nextName: nextName.trim(),
-                      })
-                    }
-                  }}
-                  playlist={playlist}
-                />
-              ))}
-            </Tabs.Content>
-
-            <Tabs.Content css={tabContentStyles} value="settings">
-              <SurfaceCard as="section">
-                <div css={cardListStyles}>
-                  <p css={headingStyles}>Change password</p>
-                  <form
-                    css={stackedFormStyles}
-                    onSubmit={(event) => {
-                      void passwordForm.handleSubmit((values) => {
-                        changePasswordMutation.mutate(values)
-                      })(event)
-                    }}
-                  >
-                    <FormField
-                      error={passwordForm.formState.errors.password?.message}
-                      label="New password"
-                    >
-                      <input
-                        css={fieldStyles.input}
-                        type="password"
-                        {...passwordForm.register('password')}
+                        placeholder="Playlist title"
+                        style={{ flex: 1, minWidth: 200 }}
+                        value={playlistName}
                       />
-                    </FormField>
-                    <FormField
-                      error={
-                        passwordForm.formState.errors.confirmPassword?.message
+                      <Button
+                        onClick={() => {
+                          if (playlistName.trim().length > 0) {
+                            createPlaylistMutation.mutate(playlistName.trim())
+                          }
+                        }}
+                        type="button"
+                      >
+                        Create playlist
+                      </Button>
+                    </Group>
+                  </Stack>
+                </Paper>
+
+                {profileData.playlists.map((playlist) => (
+                  <PlaylistCard
+                    key={playlist.name}
+                    onAddVideo={(name, url) => {
+                      if (url.trim().length > 0) {
+                        addVideoMutation.mutate({ playlistName: name, url })
                       }
-                      label="Confirm password"
-                    >
-                      <input
-                        css={fieldStyles.input}
-                        type="password"
-                        {...passwordForm.register('confirmPassword')}
-                      />
-                    </FormField>
-                    <button
-                      css={[baseButtonStyles, buttonStyles.primary]}
-                      disabled={changePasswordMutation.isPending}
-                      type="submit"
-                    >
-                      Save password
-                    </button>
-                  </form>
-                </div>
-              </SurfaceCard>
-
-              <SurfaceCard as="section">
-                <div css={cardListStyles}>
-                  <p css={headingStyles}>Danger zone</p>
-                  <p css={subcopyStyles}>
-                    Deleting your account signs you out immediately and removes
-                    the current profile.
-                  </p>
-                  <ConfirmDialog
-                    confirmLabel="Delete account"
-                    description="This action cannot be undone."
-                    onConfirm={() => {
-                      deleteAccountMutation.mutate()
                     }}
-                    onOpenChange={setAccountDialogOpen}
-                    open={accountDialogOpen}
-                    title="Delete your Streamshore account?"
-                  >
-                    <button
-                      css={[baseButtonStyles, buttonStyles.danger]}
-                      onClick={() => {
-                        setAccountDialogOpen(true)
-                      }}
+                    onDelete={(name) => deletePlaylistMutation.mutate(name)}
+                    onDeleteVideo={(name, videoId) => {
+                      removeVideoMutation.mutate({
+                        playlistName: name,
+                        videoId,
+                      })
+                    }}
+                    onRename={(name, nextName) => {
+                      if (nextName.trim().length > 0) {
+                        renamePlaylistMutation.mutate({
+                          currentName: name,
+                          nextName: nextName.trim(),
+                        })
+                      }
+                    }}
+                    playlist={playlist}
+                  />
+                ))}
+              </Stack>
+            </Tabs.Panel>
+
+            <Tabs.Panel value="settings" pt="md">
+              <Stack gap="md">
+                <Paper p="md" radius="md" withBorder component="section">
+                  <Stack gap="md">
+                    <Text fw={700}>Change password</Text>
+                    <form
+                      onSubmit={passwordForm.onSubmit((values) =>
+                        changePasswordMutation.mutate(values),
+                      )}
+                    >
+                      <Stack gap="md">
+                        <PasswordInput
+                          label="New password"
+                          {...passwordForm.getInputProps('password')}
+                        />
+                        <PasswordInput
+                          label="Confirm password"
+                          {...passwordForm.getInputProps('confirmPassword')}
+                        />
+                        <Button
+                          loading={changePasswordMutation.isPending}
+                          type="submit"
+                        >
+                          Save password
+                        </Button>
+                      </Stack>
+                    </form>
+                  </Stack>
+                </Paper>
+
+                <Paper p="md" radius="md" withBorder component="section">
+                  <Stack gap="md">
+                    <Text fw={700}>Danger zone</Text>
+                    <Text c="dimmed" size="sm">
+                      Deleting your account signs you out immediately and
+                      removes the current profile.
+                    </Text>
+                    <Button
+                      color="red"
+                      onClick={openDeleteAccountConfirm}
                       type="button"
+                      variant="light"
+                      style={{ alignSelf: 'flex-start' }}
                     >
                       Delete account
-                    </button>
-                  </ConfirmDialog>
-                </div>
-              </SurfaceCard>
-            </Tabs.Content>
-          </Tabs.Root>
+                    </Button>
+                  </Stack>
+                </Paper>
+              </Stack>
+            </Tabs.Panel>
+          </Tabs>
 
-          <p css={subcopyStyles}>
+          <Text c="dimmed" size="sm">
             Looking for a fresh room?{' '}
-            <Link css={inlineLinkStyles} to="/">
+            <Anchor component={Link} to="/">
               Return to discovery
-            </Link>
+            </Anchor>
             .
-          </p>
-        </div>
-      </AppShell>
+          </Text>
+        </Stack>
+      </PageHero>
     </>
   )
 }

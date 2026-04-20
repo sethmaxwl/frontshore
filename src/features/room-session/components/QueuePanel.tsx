@@ -1,117 +1,25 @@
-import { css } from '@compiled/react'
-import * as Dialog from '@radix-ui/react-dialog'
-import * as Tabs from '@radix-ui/react-tabs'
+import {
+  Button,
+  Card,
+  Divider,
+  Group,
+  Modal,
+  Paper,
+  ScrollArea,
+  Stack,
+  Tabs,
+  Text,
+  TextInput,
+  UnstyledButton,
+} from '@mantine/core'
+import { notifications } from '@mantine/notifications'
 import { useMutation } from '@tanstack/react-query'
 import { useState } from 'react'
 import type { JSX } from 'react'
-import { toast } from 'sonner'
 
-import {
-  baseButtonStyles,
-  buttonStyles,
-  fieldStyles,
-} from '../../../components/primitives/styles.ts'
-
-import { EmptyState } from '@/components/feedback/EmptyState'
-import { SurfaceCard } from '@/components/primitives/SurfaceCard'
 import { searchYouTubeVideos } from '@/lib/api/streamshore'
 import type { PlaylistWithVideos, RoomVideo } from '@/lib/types/streamshore'
 import { extractYouTubeVideoId } from '@/lib/utils/media'
-
-const listStyles = css({
-  display: 'grid',
-  gap: '0.75rem',
-})
-
-const queueItemStyles = css({
-  alignItems: 'center',
-  borderTop: '1px solid rgba(148, 163, 184, 0.12)',
-  contentVisibility: 'auto',
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '0.75rem',
-  justifyContent: 'space-between',
-  paddingTop: '0.85rem',
-})
-
-const valueStackStyles = css({
-  display: 'grid',
-  gap: '0.2rem',
-})
-
-const valueTitleStyles = css({
-  color: 'var(--color-text-strong)',
-  fontWeight: 700,
-  margin: 0,
-})
-
-const valueMetaStyles = css({
-  color: 'var(--color-text-muted)',
-  margin: 0,
-})
-
-const actionWrapStyles = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '0.55rem',
-})
-
-const dialogOverlayStyles = css({
-  backdropFilter: 'blur(10px)',
-  background: 'rgba(2, 6, 23, 0.72)',
-  inset: 0,
-  position: 'fixed',
-  zIndex: 40,
-})
-
-const dialogContentStyles = css({
-  background: 'rgba(5, 15, 28, 0.96)',
-  border: '1px solid var(--color-border)',
-  borderRadius: '24px',
-  boxShadow: 'var(--shadow-panel)',
-  left: '50%',
-  maxWidth: '56rem',
-  padding: '1.2rem',
-  position: 'fixed',
-  top: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 'calc(100% - 2rem)',
-  zIndex: 41,
-})
-
-const tabListStyles = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '0.75rem',
-  marginBottom: '1rem',
-})
-
-const tabTriggerStyles = css({
-  alignItems: 'center',
-  appearance: 'none',
-  background: 'rgba(8, 17, 30, 0.48)',
-  border: '1px solid var(--color-border)',
-  borderRadius: '999px',
-  color: 'var(--color-text-muted)',
-  cursor: 'pointer',
-  display: 'inline-flex',
-  fontFamily: 'inherit',
-  fontSize: '0.95rem',
-  fontWeight: 700,
-  justifyContent: 'center',
-  minHeight: '2.9rem',
-  padding: '0.7rem 1rem',
-  '&[data-state="active"]': {
-    background: 'rgba(34, 211, 238, 0.14)',
-    borderColor: 'rgba(34, 211, 238, 0.24)',
-    color: 'var(--color-text-strong)',
-  },
-})
-
-const searchFormStyles = css({
-  display: 'grid',
-  gap: '0.85rem',
-})
 
 type QueuePanelProps = {
   canAddToQueue: boolean
@@ -140,200 +48,219 @@ export function QueuePanel({
   const searchMutation = useMutation({
     mutationFn: searchYouTubeVideos,
     onError: () => {
-      toast.error('Unable to search YouTube right now.')
+      notifications.show({
+        color: 'red',
+        message: 'Unable to search YouTube right now.',
+      })
     },
   })
 
   return (
-    <SurfaceCard as="section">
-      <div css={listStyles}>
-        <div css={queueItemStyles}>
-          <div css={valueStackStyles}>
-            <p css={valueTitleStyles}>Queue</p>
-            <p css={valueMetaStyles}>
+    <Card padding="md" radius="md" withBorder component="section">
+      <Stack gap="md">
+        <Group justify="space-between" wrap="wrap" gap="sm">
+          <Stack gap={2}>
+            <Text fw={700}>Queue</Text>
+            <Text c="dimmed" size="sm">
               {queuedVideos.length} queued video
               {queuedVideos.length === 1 ? '' : 's'}
-            </p>
-          </div>
+            </Text>
+          </Stack>
           {canAddToQueue ? (
-            <Dialog.Root onOpenChange={setDialogOpen} open={dialogOpen}>
-              <Dialog.Trigger asChild>
-                <button
-                  css={[baseButtonStyles, buttonStyles.primary]}
-                  type="button"
-                >
-                  Add to queue
-                </button>
-              </Dialog.Trigger>
-              <Dialog.Portal>
-                <Dialog.Overlay css={dialogOverlayStyles} />
-                <Dialog.Content css={dialogContentStyles}>
-                  <Tabs.Root defaultValue="search">
-                    <Tabs.List css={tabListStyles}>
-                      <Tabs.Trigger css={tabTriggerStyles} value="search">
-                        YouTube search
-                      </Tabs.Trigger>
-                      <Tabs.Trigger css={tabTriggerStyles} value="url">
-                        YouTube URL
-                      </Tabs.Trigger>
-                      <Tabs.Trigger css={tabTriggerStyles} value="playlist">
-                        Playlist
-                      </Tabs.Trigger>
-                    </Tabs.List>
-
-                    <Tabs.Content value="search">
-                      <div css={searchFormStyles}>
-                        <input
-                          css={fieldStyles.input}
-                          onChange={(event) => {
-                            setSearchQuery(event.currentTarget.value)
-                          }}
-                          placeholder="Search YouTube"
-                          value={searchQuery}
-                        />
-                        <button
-                          css={[baseButtonStyles, buttonStyles.primary]}
-                          onClick={() => {
-                            if (searchQuery.trim().length > 0) {
-                              searchMutation.mutate(searchQuery.trim())
-                            }
-                          }}
-                          type="button"
-                        >
-                          Search
-                        </button>
-                        <div css={listStyles}>
-                          {(searchMutation.data ?? []).map((video) => (
-                            <button
-                              key={video.id}
-                              css={[baseButtonStyles, buttonStyles.secondary]}
-                              onClick={() => {
-                                onAddVideo(video.id)
-                                setDialogOpen(false)
-                              }}
-                              type="button"
-                            >
-                              {video.title} • {video.channel}
-                            </button>
-                          ))}
-                        </div>
-                      </div>
-                    </Tabs.Content>
-
-                    <Tabs.Content value="url">
-                      <div css={searchFormStyles}>
-                        <input
-                          css={fieldStyles.input}
-                          onChange={(event) => {
-                            setUrlInput(event.currentTarget.value)
-                          }}
-                          placeholder="https://youtube.com/watch?v=..."
-                          value={urlInput}
-                        />
-                        <button
-                          css={[baseButtonStyles, buttonStyles.primary]}
-                          onClick={() => {
-                            const videoId = extractYouTubeVideoId(urlInput)
-
-                            if (!videoId) {
-                              toast.error('That YouTube URL is invalid.')
-                              return
-                            }
-
-                            onAddVideo(videoId)
-                            setDialogOpen(false)
-                          }}
-                          type="button"
-                        >
-                          Add by URL
-                        </button>
-                      </div>
-                    </Tabs.Content>
-
-                    <Tabs.Content value="playlist">
-                      <div css={listStyles}>
-                        {playlists.length > 0 ? (
-                          playlists.map((playlist) => (
-                            <div key={playlist.name} css={listStyles}>
-                              <p css={valueTitleStyles}>{playlist.name}</p>
-                              {(playlist.videos ?? []).map((video) => (
-                                <button
-                                  key={`${playlist.name}-${video.id}`}
-                                  css={[
-                                    baseButtonStyles,
-                                    buttonStyles.secondary,
-                                  ]}
-                                  onClick={() => {
-                                    onAddVideo(video.id)
-                                    setDialogOpen(false)
-                                  }}
-                                  type="button"
-                                >
-                                  {video.title}
-                                </button>
-                              ))}
-                            </div>
-                          ))
-                        ) : (
-                          <EmptyState
-                            description="Create playlists in your profile and they will appear here."
-                            title="No playlists available"
-                          />
-                        )}
-                      </div>
-                    </Tabs.Content>
-                  </Tabs.Root>
-                </Dialog.Content>
-              </Dialog.Portal>
-            </Dialog.Root>
+            <Button onClick={() => setDialogOpen(true)} type="button">
+              Add to queue
+            </Button>
           ) : null}
-        </div>
+        </Group>
 
         {queuedVideos.length > 0 ? (
-          queuedVideos.map((video, index) => (
-            <div key={`${video.id}-${index}`} css={queueItemStyles}>
-              <div css={valueStackStyles}>
-                <p css={valueTitleStyles}>
-                  {index === 0 ? 'Next up • ' : ''}
-                  {video.title}
-                </p>
-                <p css={valueMetaStyles}>
-                  Submitted by {video.submittedBy || currentUser}
-                </p>
+          <Stack gap="sm">
+            {queuedVideos.map((video, index) => (
+              <div key={`${video.id}-${index}`}>
+                {index > 0 ? <Divider mb="sm" /> : null}
+                <Group
+                  justify="space-between"
+                  wrap="wrap"
+                  gap="sm"
+                  align="flex-start"
+                >
+                  <Stack gap={2} style={{ minWidth: 0, flex: 1 }}>
+                    <Text fw={700}>
+                      {index === 0 ? 'Next up • ' : ''}
+                      {video.title}
+                    </Text>
+                    <Text c="dimmed" size="sm">
+                      Submitted by {video.submittedBy || currentUser}
+                    </Text>
+                  </Stack>
+                  {permission >= 50 ? (
+                    <Group gap="xs">
+                      {index === 0 ? null : (
+                        <Button
+                          onClick={() => onMoveToFront(index)}
+                          size="xs"
+                          variant="default"
+                          type="button"
+                        >
+                          Move to front
+                        </Button>
+                      )}
+                      <Button
+                        color="red"
+                        onClick={() => onRemoveVideo(index)}
+                        size="xs"
+                        variant="light"
+                        type="button"
+                      >
+                        Remove
+                      </Button>
+                    </Group>
+                  ) : null}
+                </Group>
               </div>
-              {permission >= 50 ? (
-                <div css={actionWrapStyles}>
-                  {index === 0 ? null : (
-                    <button
-                      css={[baseButtonStyles, buttonStyles.secondary]}
-                      onClick={() => {
-                        onMoveToFront(index)
-                      }}
-                      type="button"
-                    >
-                      Move to front
-                    </button>
-                  )}
-                  <button
-                    css={[baseButtonStyles, buttonStyles.danger]}
-                    onClick={() => {
-                      onRemoveVideo(index)
-                    }}
-                    type="button"
-                  >
-                    Remove
-                  </button>
-                </div>
-              ) : null}
-            </div>
-          ))
+            ))}
+          </Stack>
         ) : (
-          <EmptyState
-            description="Add a video from YouTube, a direct URL, or one of your saved playlists."
-            title="The queue is empty"
-          />
+          <Paper p="lg" radius="md" withBorder>
+            <Stack gap="xs">
+              <Text fw={600}>The queue is empty</Text>
+              <Text c="dimmed" size="sm">
+                Add a video from YouTube, a direct URL, or one of your saved
+                playlists.
+              </Text>
+            </Stack>
+          </Paper>
         )}
-      </div>
-    </SurfaceCard>
+      </Stack>
+
+      <Modal
+        onClose={() => setDialogOpen(false)}
+        opened={dialogOpen}
+        size="xl"
+        title="Add to queue"
+      >
+        <Tabs defaultValue="search">
+          <Tabs.List>
+            <Tabs.Tab value="search">YouTube search</Tabs.Tab>
+            <Tabs.Tab value="url">YouTube URL</Tabs.Tab>
+            <Tabs.Tab value="playlist">Playlist</Tabs.Tab>
+          </Tabs.List>
+
+          <Tabs.Panel value="search" pt="md">
+            <Stack gap="sm">
+              <Group gap="sm" align="flex-end" wrap="nowrap">
+                <TextInput
+                  aria-label="Search YouTube"
+                  onChange={(event) =>
+                    setSearchQuery(event.currentTarget.value)
+                  }
+                  placeholder="Search YouTube"
+                  style={{ flex: 1 }}
+                  value={searchQuery}
+                />
+                <Button
+                  onClick={() => {
+                    if (searchQuery.trim().length > 0) {
+                      searchMutation.mutate(searchQuery.trim())
+                    }
+                  }}
+                  type="button"
+                >
+                  Search
+                </Button>
+              </Group>
+              <ScrollArea.Autosize mah={360}>
+                <Stack gap="xs">
+                  {(searchMutation.data ?? []).map((video) => (
+                    <UnstyledButton
+                      key={video.id}
+                      onClick={() => {
+                        onAddVideo(video.id)
+                        setDialogOpen(false)
+                      }}
+                    >
+                      <Paper p="sm" radius="md" withBorder>
+                        <Text fw={600} lineClamp={1}>
+                          {video.title}
+                        </Text>
+                        <Text c="dimmed" size="sm">
+                          {video.channel}
+                        </Text>
+                      </Paper>
+                    </UnstyledButton>
+                  ))}
+                </Stack>
+              </ScrollArea.Autosize>
+            </Stack>
+          </Tabs.Panel>
+
+          <Tabs.Panel value="url" pt="md">
+            <Stack gap="sm">
+              <TextInput
+                aria-label="YouTube URL"
+                onChange={(event) => setUrlInput(event.currentTarget.value)}
+                placeholder="https://youtube.com/watch?v=..."
+                value={urlInput}
+              />
+              <Button
+                onClick={() => {
+                  const videoId = extractYouTubeVideoId(urlInput)
+
+                  if (!videoId) {
+                    notifications.show({
+                      color: 'red',
+                      message: 'That YouTube URL is invalid.',
+                    })
+                    return
+                  }
+
+                  onAddVideo(videoId)
+                  setDialogOpen(false)
+                }}
+                type="button"
+              >
+                Add by URL
+              </Button>
+            </Stack>
+          </Tabs.Panel>
+
+          <Tabs.Panel value="playlist" pt="md">
+            {playlists.length > 0 ? (
+              <ScrollArea.Autosize mah={420}>
+                <Stack gap="md">
+                  {playlists.map((playlist) => (
+                    <Stack key={playlist.name} gap="xs">
+                      <Text fw={700}>{playlist.name}</Text>
+                      {(playlist.videos ?? []).map((video) => (
+                        <UnstyledButton
+                          key={`${playlist.name}-${video.id}`}
+                          onClick={() => {
+                            onAddVideo(video.id)
+                            setDialogOpen(false)
+                          }}
+                        >
+                          <Paper p="sm" radius="md" withBorder>
+                            <Text lineClamp={1}>{video.title}</Text>
+                          </Paper>
+                        </UnstyledButton>
+                      ))}
+                    </Stack>
+                  ))}
+                </Stack>
+              </ScrollArea.Autosize>
+            ) : (
+              <Paper p="lg" radius="md" withBorder>
+                <Stack gap="xs">
+                  <Text fw={600}>No playlists available</Text>
+                  <Text c="dimmed" size="sm">
+                    Create playlists in your profile and they will appear here.
+                  </Text>
+                </Stack>
+              </Paper>
+            )}
+          </Tabs.Panel>
+        </Tabs>
+      </Modal>
+    </Card>
   )
 }

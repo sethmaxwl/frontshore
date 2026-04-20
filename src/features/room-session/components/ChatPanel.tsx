@@ -1,78 +1,16 @@
-import { css } from '@compiled/react'
+import {
+  Button,
+  Group,
+  Paper,
+  ScrollArea,
+  Stack,
+  Text,
+  Textarea,
+} from '@mantine/core'
 import { useDeferredValue, useEffect, useMemo, useRef, useState } from 'react'
 import type { JSX } from 'react'
 
-import {
-  baseButtonStyles,
-  buttonStyles,
-  fieldStyles,
-} from '../../../components/primitives/styles.ts'
-
-import { EmptyState } from '@/components/feedback/EmptyState'
 import type { PresenceUser, RoomMessage } from '@/lib/types/streamshore'
-
-const shellStyles = css({
-  display: 'grid',
-  gap: '0.85rem',
-})
-
-const messageListStyles = css({
-  display: 'grid',
-  gap: '0.75rem',
-  maxHeight: '28rem',
-  overflowY: 'auto',
-  paddingRight: '0.35rem',
-})
-
-const messageCardStyles = css({
-  background: 'rgba(8, 17, 30, 0.52)',
-  border: '1px solid rgba(148, 163, 184, 0.12)',
-  borderRadius: '20px',
-  display: 'grid',
-  gap: '0.5rem',
-  padding: '0.85rem',
-})
-
-const highlightStyles = css({
-  borderColor: 'rgba(34, 211, 238, 0.28)',
-  boxShadow: '0 0 0 3px rgba(34, 211, 238, 0.08)',
-})
-
-const messageHeaderStyles = css({
-  alignItems: 'center',
-  display: 'flex',
-  gap: '0.65rem',
-  justifyContent: 'space-between',
-})
-
-const userStyles = css({
-  color: 'var(--color-text-strong)',
-  fontWeight: 700,
-  margin: 0,
-})
-
-const timeStyles = css({
-  color: 'var(--color-text-muted)',
-  fontSize: '0.82rem',
-  margin: 0,
-})
-
-const bodyStyles = css({
-  color: 'var(--color-text-muted)',
-  margin: 0,
-  whiteSpace: 'pre-wrap',
-})
-
-const composerStyles = css({
-  display: 'grid',
-  gap: '0.75rem',
-})
-
-const suggestionWrapStyles = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '0.55rem',
-})
 
 type ChatPanelProps = {
   currentUser: string
@@ -93,7 +31,7 @@ export function ChatPanel({
   permission,
   users,
 }: ChatPanelProps): JSX.Element {
-  const feedReference = useRef<HTMLDivElement | null>(null)
+  const viewportRef = useRef<HTMLDivElement | null>(null)
   const [input, setInput] = useState('')
   const deferredInput = useDeferredValue(input)
   const suggestions = useMemo(() => {
@@ -114,9 +52,9 @@ export function ChatPanel({
   }, [currentUser, deferredInput, users])
 
   useEffect(() => {
-    feedReference.current?.scrollTo({
+    viewportRef.current?.scrollTo({
       behavior: 'smooth',
-      top: feedReference.current.scrollHeight,
+      top: viewportRef.current.scrollHeight,
     })
   }, [messages])
 
@@ -127,88 +65,107 @@ export function ChatPanel({
   }
 
   return (
-    <div css={shellStyles}>
-      <div ref={feedReference} css={messageListStyles}>
+    <Stack gap="sm">
+      <ScrollArea h={448} viewportRef={viewportRef}>
         {messages.length > 0 ? (
-          messages.map((message) => {
-            const highlightsCurrentUser =
-              !message.motd && message.msg.includes(`@${currentUser}`)
+          <Stack gap="sm" pr="xs">
+            {messages.map((message) => {
+              const highlightsCurrentUser =
+                !message.motd && message.msg.includes(`@${currentUser}`)
 
-            return (
-              <article
-                key={message.uuid}
-                css={[
-                  messageCardStyles,
-                  highlightsCurrentUser ? highlightStyles : null,
-                ]}
-              >
-                <div css={messageHeaderStyles}>
-                  <div>
-                    <p css={userStyles}>
-                      {message.motd ? 'Room message' : message.user}
-                    </p>
-                    <p css={timeStyles}>
-                      {message.motd
-                        ? 'MOTD'
-                        : new Date(message.time * 1000).toLocaleTimeString()}
-                    </p>
-                  </div>
-                  {permission >= 50 && !message.motd ? (
-                    <button
-                      css={[baseButtonStyles, buttonStyles.secondary]}
-                      onClick={() => {
-                        onDeleteMessage(message.uuid)
-                      }}
-                      type="button"
+              return (
+                <Paper
+                  key={message.uuid}
+                  p="sm"
+                  radius="md"
+                  withBorder
+                  bg={highlightsCurrentUser ? 'teal.0' : undefined}
+                  style={
+                    highlightsCurrentUser
+                      ? { borderColor: 'var(--mantine-color-teal-5)' }
+                      : undefined
+                  }
+                >
+                  <Stack gap={6}>
+                    <Group
+                      justify="space-between"
+                      wrap="nowrap"
+                      align="flex-start"
                     >
-                      Delete
-                    </button>
-                  ) : null}
-                </div>
-                <p css={bodyStyles}>{message.msg}</p>
-              </article>
-            )
-          })
+                      <Stack gap={0}>
+                        <Text fw={700} size="sm">
+                          {message.motd ? 'Room message' : message.user}
+                        </Text>
+                        <Text c="dimmed" size="xs">
+                          {message.motd
+                            ? 'MOTD'
+                            : new Date(
+                                message.time * 1000,
+                              ).toLocaleTimeString()}
+                        </Text>
+                      </Stack>
+                      {permission >= 50 && !message.motd ? (
+                        <Button
+                          color="red"
+                          onClick={() => onDeleteMessage(message.uuid)}
+                          size="xs"
+                          variant="light"
+                          type="button"
+                        >
+                          Delete
+                        </Button>
+                      ) : null}
+                    </Group>
+                    <Text size="sm" style={{ whiteSpace: 'pre-wrap' }}>
+                      {message.msg}
+                    </Text>
+                  </Stack>
+                </Paper>
+              )
+            })}
+          </Stack>
         ) : (
-          <EmptyState
-            description="No chat activity yet. Start the conversation when you are ready."
-            title="Chat is quiet"
-          />
+          <Paper p="lg" radius="md" withBorder>
+            <Stack gap="xs">
+              <Text fw={600}>Chat is quiet</Text>
+              <Text c="dimmed" size="sm">
+                No chat activity yet. Start the conversation when you are ready.
+              </Text>
+            </Stack>
+          </Paper>
         )}
-      </div>
+      </ScrollArea>
 
-      <div css={composerStyles}>
+      <Stack gap="sm">
         {suggestions.length > 0 ? (
-          <div css={suggestionWrapStyles}>
+          <Group gap="xs" wrap="wrap">
             {suggestions.map((name) => (
-              <button
+              <Button
                 key={name}
-                css={[baseButtonStyles, buttonStyles.secondary]}
-                onClick={() => {
-                  replaceMention(name)
-                }}
+                onClick={() => replaceMention(name)}
+                size="xs"
+                variant="default"
                 type="button"
               >
                 @{name}
-              </button>
+              </Button>
             ))}
-          </div>
+          </Group>
         ) : null}
-        <textarea
-          css={fieldStyles.textarea}
+        <Textarea
+          autosize
           disabled={disabled}
-          onChange={(event) => {
-            setInput(event.currentTarget.value)
-          }}
+          minRows={2}
+          maxRows={6}
+          onChange={(event) => setInput(event.currentTarget.value)}
           placeholder={
             disabled
               ? 'You do not have permission to chat in this room.'
-              : 'Say something to the room...'
+              : 'Say something to the room…'
           }
           value={input}
         />
-        <button
-          css={[baseButtonStyles, buttonStyles.primary]}
+        <Button
           disabled={disabled || input.trim().length === 0}
           onClick={() => {
             if (input.trim().length === 0) {
@@ -221,8 +178,8 @@ export function ChatPanel({
           type="button"
         >
           Send message
-        </button>
-      </div>
-    </div>
+        </Button>
+      </Stack>
+    </Stack>
   )
 }

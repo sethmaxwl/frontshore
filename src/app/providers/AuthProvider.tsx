@@ -46,9 +46,7 @@ export function AuthProvider({ children }: PropsWithChildren): JSX.Element {
       },
       isAuthenticated: Boolean(session?.isLoggedIn && !session.anon),
       login: (nextSession) => {
-        const normalizedSession = normalizeAuthSession(
-          nextSession as AuthSession,
-        )
+        const normalizedSession = normalizeAuthSession(nextSession)
 
         setSession(normalizedSession)
         saveAuthSession(normalizedSession)

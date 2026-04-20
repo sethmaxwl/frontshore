@@ -1,20 +1,23 @@
+import { MantineProvider } from '@mantine/core'
 import { screen } from '@testing-library/dom'
 import { render } from '@testing-library/react'
 import { describe, expect, it } from 'vitest'
 
-import { AppShell } from '@/components/layout/AppShell'
+import { PageHero } from '@/components/layout/PageHero'
 
-describe('AppShell', () => {
+describe('PageHero', () => {
   it('renders the page title, description, and main content', () => {
     render(
-      <AppShell
-        description="Keep synchronized playback, queue tools, and social controls in one place."
-        eyebrow="Streamshore"
-        subtitle="Live room dashboard"
-        title="Current control room"
-      >
-        <div>Room body content</div>
-      </AppShell>,
+      <MantineProvider>
+        <PageHero
+          description="Keep synchronized playback, queue tools, and social controls in one place."
+          eyebrow="Streamshore"
+          subtitle="Live room dashboard"
+          title="Current control room"
+        >
+          <div>Room body content</div>
+        </PageHero>
+      </MantineProvider>,
     )
 
     expect(

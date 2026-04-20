@@ -1,39 +1,34 @@
 import '@testing-library/jest-dom/vitest'
 
-import { toHaveCompiledCss } from '@compiled/jest'
-import { expect } from 'vitest'
+import { vi } from 'vitest'
 
-expect.extend({ toHaveCompiledCss })
+Object.defineProperty(globalThis, 'matchMedia', {
+  writable: true,
+  value: vi.fn().mockImplementation((query: string) => ({
+    matches: false,
+    media: query,
+    onchange: null,
+    addListener: vi.fn(),
+    removeListener: vi.fn(),
+    addEventListener: vi.fn(),
+    removeEventListener: vi.fn(),
+    dispatchEvent: vi.fn(),
+  })),
+})
 
-type CompiledMatchFilter = {
-  media?: string
-  target?: string
+class ResizeObserverStub {
+  observe(): void {}
+  unobserve(): void {}
+  disconnect(): void {}
 }
 
-declare module 'vitest' {
-  // Match jest-dom's existing Vitest augmentation signature.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  interface Assertion<T = any> {
-    toHaveCompiledCss(
-      properties: Record<string, string>,
-      matchFilter?: CompiledMatchFilter,
-    ): T
-    toHaveCompiledCss(
-      property: string,
-      value: string,
-      matchFilter?: CompiledMatchFilter,
-    ): T
-  }
+globalThis.ResizeObserver = ResizeObserverStub
 
-  interface AsymmetricMatchersContaining {
-    toHaveCompiledCss(
-      properties: Record<string, string>,
-      matchFilter?: CompiledMatchFilter,
-    ): void
-    toHaveCompiledCss(
-      property: string,
-      value: string,
-      matchFilter?: CompiledMatchFilter,
-    ): void
-  }
+if (!globalThis.HTMLElement.prototype.scrollTo) {
+  globalThis.HTMLElement.prototype.scrollTo = function scrollToStub(): void {}
+}
+
+if (!globalThis.HTMLElement.prototype.scrollIntoView) {
+  globalThis.HTMLElement.prototype.scrollIntoView =
+    function scrollIntoViewStub(): void {}
 }

@@ -1,23 +1,24 @@
-import { css } from '@compiled/react'
-import { zodResolver } from '@hookform/resolvers/zod'
+import {
+  Anchor,
+  Button,
+  Container,
+  PasswordInput,
+  Paper,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+} from '@mantine/core'
+import { useForm } from '@mantine/form'
+import { notifications } from '@mantine/notifications'
 import { useMutation } from '@tanstack/react-query'
+import { zodResolver } from 'mantine-form-zod-resolver'
 import type { JSX } from 'react'
 import { useState } from 'react'
-import { useForm } from 'react-hook-form'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
-import { toast } from 'sonner'
 import { z } from 'zod'
 
-import {
-  baseButtonStyles,
-  buttonStyles,
-  fieldStyles,
-  inlineLinkStyles,
-} from '../../components/primitives/styles.ts'
-
 import { useAuth } from '@/app/providers/AuthProvider'
-import { FormField } from '@/components/forms/FormField'
-import { AuthCard } from '@/features/auth/components/AuthCard'
 import { getApiErrorMessage } from '@/lib/api/client'
 import { createSession } from '@/lib/api/streamshore'
 
@@ -28,26 +29,15 @@ const schema = z.object({
 
 type LoginValues = z.infer<typeof schema>
 
-const formStyles = css({
-  display: 'grid',
-  gap: '1rem',
-})
-
-const footerCopyStyles = css({
-  margin: 0,
-})
-
 export default function LoginPage(): JSX.Element {
   const { login } = useAuth()
   const location = useLocation()
   const navigate = useNavigate()
   const [showResendPrompt, setShowResendPrompt] = useState(false)
   const form = useForm<LoginValues>({
-    defaultValues: {
-      id: '',
-      password: '',
-    },
-    resolver: zodResolver(schema),
+    mode: 'uncontrolled',
+    initialValues: { id: '', password: '' },
+    validate: zodResolver(schema),
   })
 
   const loginMutation = useMutation({
@@ -55,11 +45,11 @@ export default function LoginPage(): JSX.Element {
     onError: (error) => {
       const message = getApiErrorMessage(error, 'Unable to log in')
       setShowResendPrompt(message === 'Email address not verified')
-      toast.error(message)
+      notifications.show({ color: 'red', message })
     },
     onSuccess: (session) => {
       login(session)
-      toast.success('Login successful.')
+      notifications.show({ color: 'teal', message: 'Login successful.' })
       void navigate(
         (location.state as { from?: string } | null)?.from ?? '/profile',
       )
@@ -67,69 +57,55 @@ export default function LoginPage(): JSX.Element {
   })
 
   return (
-    <AuthCard
-      description="Jump back into your profile, your playlists, and your live rooms."
-      footer={
-        <>
-          <p css={footerCopyStyles}>
-            Forgot your password?{' '}
-            <Link css={inlineLinkStyles} to="/forgot-password">
-              Reset it here
-            </Link>
-            .
-          </p>
-          <p css={footerCopyStyles}>
-            New around here?{' '}
-            <Link css={inlineLinkStyles} to="/register">
-              Create an account
-            </Link>
-            .
-          </p>
-          {showResendPrompt ? (
-            <p css={footerCopyStyles}>
-              Need another verification email?{' '}
-              <Link css={inlineLinkStyles} to="/resend-verification">
-                Resend it
-              </Link>
+    <Container size="xs" py="xl">
+      <Paper p="xl" radius="md" withBorder>
+        <Stack gap="lg">
+          <Title order={1}>Log in</Title>
+          <form
+            onSubmit={form.onSubmit((values) => loginMutation.mutate(values))}
+          >
+            <Stack gap="md">
+              <TextInput
+                label="Username or email"
+                {...form.getInputProps('id')}
+              />
+              <PasswordInput
+                label="Password"
+                {...form.getInputProps('password')}
+              />
+              <Button loading={loginMutation.isPending} type="submit" fullWidth>
+                Log in
+              </Button>
+            </Stack>
+          </form>
+
+          <Stack gap="xs">
+            <Text c="dimmed" size="sm">
+              Forgot your password?{' '}
+              <Anchor component={Link} to="/forgot-password">
+                Reset it here
+              </Anchor>
               .
-            </p>
-          ) : null}
-        </>
-      }
-      title="Log in"
-    >
-      <form
-        css={formStyles}
-        onSubmit={(event) => {
-          void form.handleSubmit((values) => {
-            loginMutation.mutate(values)
-          })(event)
-        }}
-      >
-        <FormField
-          error={form.formState.errors.id?.message}
-          label="Username or email"
-        >
-          <input css={fieldStyles.input} {...form.register('id')} />
-        </FormField>
-        <FormField
-          error={form.formState.errors.password?.message}
-          label="Password"
-        >
-          <input
-            css={fieldStyles.input}
-            type="password"
-            {...form.register('password')}
-          />
-        </FormField>
-        <button
-          css={[baseButtonStyles, buttonStyles.primary]}
-          disabled={loginMutation.isPending}
-          type="submit"
-        >
-          {loginMutation.isPending ? 'Logging in...' : 'Log in'}
-        </button>
-      </form>
-    </AuthCard>
+            </Text>
+            <Text c="dimmed" size="sm">
+              New around here?{' '}
+              <Anchor component={Link} to="/register">
+                Create an account
+              </Anchor>
+              .
+            </Text>
+            {showResendPrompt ? (
+              <Text c="dimmed" size="sm">
+                Need another verification email?{' '}
+                <Anchor component={Link} to="/resend-verification">
+                  Resend it
+                </Anchor>
+                .
+              </Text>
+            ) : null}
+          </Stack>
+        </Stack>
+      </Paper>
+    </Container>
   )
 }

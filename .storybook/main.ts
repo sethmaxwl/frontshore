@@ -1,7 +1,6 @@
 import path from 'node:path'
 import { fileURLToPath } from 'node:url'
 
-import compiled from '@compiled/vite-plugin'
 import type { StorybookConfig } from '@storybook/react-vite'
 
 const storybookConfigDir = path.dirname(fileURLToPath(import.meta.url))
@@ -20,13 +19,6 @@ const config: StorybookConfig = {
       ...config.resolve.alias,
       '@': srcDirectory,
     }
-    config.plugins = [
-      compiled({
-        extract: false,
-        importReact: false,
-      }),
-      ...(config.plugins ?? []),
-    ]
 
     return config
   },

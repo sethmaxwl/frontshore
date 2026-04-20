@@ -1,21 +1,14 @@
-import { css } from '@compiled/react'
-import * as Tabs from '@radix-ui/react-tabs'
+import { Button, Center, Grid, Group, Loader, Tabs } from '@mantine/core'
+import { modals } from '@mantine/modals'
+import { notifications } from '@mantine/notifications'
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import { useEffect, useState } from 'react'
 import type { JSX } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
-import { toast } from 'sonner'
-
-import {
-  baseButtonStyles,
-  buttonStyles,
-} from '../../components/primitives/styles.ts'
 
 import { useAuth } from '@/app/providers/AuthProvider'
-import { RouteFallback } from '@/components/feedback/RouteFallback'
-import { AppShell } from '@/components/layout/AppShell'
+import { PageHero } from '@/components/layout/PageHero'
 import { PageMetadata } from '@/components/metadata/PageMetadata'
-import { ConfirmDialog } from '@/components/overlays/ConfirmDialog'
 import { ChatPanel } from '@/features/room-session/components/ChatPanel'
 import { QueuePanel } from '@/features/room-session/components/QueuePanel'
 import { RoomSettingsDialog } from '@/features/room-session/components/RoomSettingsDialog'
@@ -44,67 +37,12 @@ import type {
   RoomSettingsDraft,
 } from '@/lib/types/streamshore'
 
-const layoutStyles = css({
-  display: 'grid',
-  gap: '1rem',
-  gridTemplateColumns: 'minmax(0, 1.65fr) minmax(20rem, 1fr)',
-  '@media (max-width: 960px)': {
-    gridTemplateColumns: '1fr',
-  },
-})
-
-const columnStyles = css({
-  display: 'grid',
-  gap: '1rem',
-})
-
-const topRowStyles = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '0.75rem',
-})
-
-const tabListStyles = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '0.75rem',
-})
-
-const tabTriggerStyles = css({
-  alignItems: 'center',
-  appearance: 'none',
-  background: 'rgba(8, 17, 30, 0.48)',
-  border: '1px solid var(--color-border)',
-  borderRadius: '999px',
-  color: 'var(--color-text-muted)',
-  cursor: 'pointer',
-  display: 'inline-flex',
-  fontFamily: 'inherit',
-  fontSize: '0.95rem',
-  fontWeight: 700,
-  justifyContent: 'center',
-  minHeight: '2.9rem',
-  padding: '0.7rem 1rem',
-  '&[data-state="active"]': {
-    background: 'rgba(34, 211, 238, 0.14)',
-    borderColor: 'rgba(34, 211, 238, 0.24)',
-    color: 'var(--color-text-strong)',
-  },
-})
-
-const sidebarContentStyles = css({
-  display: 'grid',
-  gap: '1rem',
-  marginTop: '1rem',
-})
-
 export default function RoomPage(): JSX.Element {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { room: roomSlug = '' } = useParams()
   const { ensureGuestSession, isAuthenticated, session } = useAuth()
   const [settingsOpen, setSettingsOpen] = useState(false)
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false)
 
   const bootstrapQuery = useQuery({
     enabled: roomSlug.length > 0,
@@ -136,11 +74,17 @@ export default function RoomPage(): JSX.Element {
   const roomSession = useRoomSession({
     currentUser,
     onBanned: () => {
-      toast.error('You have been banned from this room.')
+      notifications.show({
+        color: 'red',
+        message: 'You have been banned from this room.',
+      })
       void navigate('/')
     },
     onDeleted: () => {
-      toast.error('This room has been deleted.')
+      notifications.show({
+        color: 'red',
+        message: 'This room has been deleted.',
+      })
       void navigate('/')
     },
     onMissingRoom: () => {
@@ -210,7 +154,10 @@ export default function RoomPage(): JSX.Element {
       return addFavorite(currentUser, roomSlug)
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to update favorite'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to update favorite'),
+      })
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['landing'] })
@@ -218,11 +165,12 @@ export default function RoomPage(): JSX.Element {
       void queryClient.invalidateQueries({
         queryKey: ['room', roomSlug, 'favorite', currentUser],
       })
-      toast.success(
-        favoriteQuery.data
+      notifications.show({
+        color: 'teal',
+        message: favoriteQuery.data
           ? 'Removed room from favorites.'
           : 'Added room to favorites.',
-      )
+      })
     },
   })
 
@@ -230,21 +178,30 @@ export default function RoomPage(): JSX.Element {
     mutationFn: async (videoId: string) =>
       addVideoToQueue(roomSlug, { id: videoId, user: currentUser }),
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to add video to queue'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to add video to queue'),
+      })
     },
   })
 
   const queueMoveMutation = useMutation({
     mutationFn: async (index: number) => moveQueueVideoToFront(roomSlug, index),
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to reorder queue'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to reorder queue'),
+      })
     },
   })
 
   const queueRemoveMutation = useMutation({
     mutationFn: async (index: number) => removeQueueVideo(roomSlug, index),
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to remove video'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to remove video'),
+      })
     },
   })
 
@@ -254,20 +211,26 @@ export default function RoomPage(): JSX.Element {
       username: string
     }) => updateRoomPermission(roomSlug, payload.username, payload.permission),
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to update permissions'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to update permissions'),
+      })
     },
   })
 
   const settingsMutation = useMutation({
     mutationFn: async (draft: RoomSettingsDraft) => updateRoom(roomSlug, draft),
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to save room settings'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to save room settings'),
+      })
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({
         queryKey: ['room', roomSlug, 'settings'],
       })
-      toast.success('Room settings saved.')
+      notifications.show({ color: 'teal', message: 'Room settings saved.' })
       setSettingsOpen(false)
     },
   })
@@ -275,18 +238,38 @@ export default function RoomPage(): JSX.Element {
   const deleteRoomMutation = useMutation({
     mutationFn: async () => deleteRoom(roomSlug),
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to delete room'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to delete room'),
+      })
     },
     onSuccess: () => {
       void queryClient.invalidateQueries({ queryKey: ['landing'] })
       void queryClient.invalidateQueries({ queryKey: ['profile'] })
-      toast.success('Room deleted.')
+      notifications.show({ color: 'teal', message: 'Room deleted.' })
       void navigate('/')
     },
   })
 
   if (bootstrapQuery.isPending || !room || !activeSession?.token) {
-    return <RouteFallback />
+    return (
+      <Center h="50vh">
+        <Loader />
+      </Center>
+    )
+  }
+
+  const openDeleteConfirm = (): void => {
+    modals.openConfirmModal({
+      title: `Delete ${room.name}?`,
+      children:
+        'Everyone connected will be removed and the room route will stop working.',
+      labels: { cancel: 'Cancel', confirm: 'Delete room' },
+      confirmProps: { color: 'red' },
+      onConfirm: () => {
+        deleteRoomMutation.mutate()
+      },
+    })
   }
 
   return (
@@ -295,32 +278,28 @@ export default function RoomPage(): JSX.Element {
         description={`Join ${room.name} on Streamshore for synchronized playback, live chat, and queue control.`}
         title={`Streamshore | ${room.name}`}
       />
-      <AppShell
+      <PageHero
         actions={
-          <div css={topRowStyles}>
+          <Group gap="sm" wrap="wrap">
             {isAuthenticated ? (
-              <button
-                css={[baseButtonStyles, buttonStyles.secondary]}
-                onClick={() => {
-                  favoriteMutation.mutate()
-                }}
+              <Button
+                onClick={() => favoriteMutation.mutate()}
+                variant="default"
                 type="button"
               >
                 {favoriteQuery.data ? 'Unfavorite' : 'Favorite'}
-              </button>
+              </Button>
             ) : null}
             {roomPermission >= 50 ? (
-              <button
-                css={[baseButtonStyles, buttonStyles.secondary]}
-                onClick={() => {
-                  setSettingsOpen(true)
-                }}
+              <Button
+                onClick={() => setSettingsOpen(true)}
+                variant="default"
                 type="button"
               >
                 Room settings
-              </button>
+              </Button>
             ) : null}
-          </div>
+          </Group>
         }
         eyebrow="Live room"
         subtitle={
@@ -331,8 +310,8 @@ export default function RoomPage(): JSX.Element {
           room.privacy === 0 ? 'Public room' : 'Private room'
         }.`}
       >
-        <div css={layoutStyles}>
-          <div css={columnStyles}>
+        <Grid gap="md">
+          <Grid.Col span={{ base: 12, md: 8 }}>
             <RoomVideoPlayer
               canSkipVideo={canSkipVideo}
               currentVideo={roomSession.state.currentVideo}
@@ -342,36 +321,28 @@ export default function RoomPage(): JSX.Element {
               syncTime={roomSession.state.syncTime}
               votingEnabled={votingEnabled}
             />
-            <QueuePanel
-              canAddToQueue={canAddToQueue}
-              currentUser={currentUser}
-              onAddVideo={(videoId) => {
-                queueMutation.mutate(videoId)
-              }}
-              onMoveToFront={(index) => {
-                queueMoveMutation.mutate(index)
-              }}
-              onRemoveVideo={(index) => {
-                queueRemoveMutation.mutate(index)
-              }}
-              permission={roomPermission}
-              playlists={playlistsQuery.data ?? []}
-              queuedVideos={roomSession.state.queuedVideos}
-            />
-          </div>
+            <div style={{ marginTop: 'var(--mantine-spacing-md)' }}>
+              <QueuePanel
+                canAddToQueue={canAddToQueue}
+                currentUser={currentUser}
+                onAddVideo={(videoId) => queueMutation.mutate(videoId)}
+                onMoveToFront={(index) => queueMoveMutation.mutate(index)}
+                onRemoveVideo={(index) => queueRemoveMutation.mutate(index)}
+                permission={roomPermission}
+                playlists={playlistsQuery.data ?? []}
+                queuedVideos={roomSession.state.queuedVideos}
+              />
+            </div>
+          </Grid.Col>
 
-          <div css={columnStyles}>
-            <Tabs.Root defaultValue="chat">
-              <Tabs.List css={tabListStyles}>
-                <Tabs.Trigger css={tabTriggerStyles} value="chat">
-                  Chat
-                </Tabs.Trigger>
-                <Tabs.Trigger css={tabTriggerStyles} value="users">
-                  Users
-                </Tabs.Trigger>
+          <Grid.Col span={{ base: 12, md: 4 }}>
+            <Tabs defaultValue="chat">
+              <Tabs.List>
+                <Tabs.Tab value="chat">Chat</Tabs.Tab>
+                <Tabs.Tab value="users">Users</Tabs.Tab>
               </Tabs.List>
 
-              <Tabs.Content css={sidebarContentStyles} value="chat">
+              <Tabs.Panel value="chat" pt="md">
                 <ChatPanel
                   currentUser={currentUser}
                   disabled={isChatDisabled}
@@ -381,9 +352,9 @@ export default function RoomPage(): JSX.Element {
                   permission={roomPermission}
                   users={roomUsers}
                 />
-              </Tabs.Content>
+              </Tabs.Panel>
 
-              <Tabs.Content css={sidebarContentStyles} value="users">
+              <Tabs.Panel value="users" pt="md">
                 <RoomUsersPanel
                   currentPermission={roomPermission}
                   currentUser={currentUser}
@@ -392,36 +363,20 @@ export default function RoomPage(): JSX.Element {
                   }}
                   users={roomUsers}
                 />
-              </Tabs.Content>
-            </Tabs.Root>
-          </div>
-        </div>
+              </Tabs.Panel>
+            </Tabs>
+          </Grid.Col>
+        </Grid>
 
         <RoomSettingsDialog
           initialValues={settingsQuery.data}
           isLoading={settingsQuery.isPending}
-          onDeleteRoom={() => {
-            setDeleteDialogOpen(true)
-          }}
+          onDeleteRoom={openDeleteConfirm}
           onOpenChange={setSettingsOpen}
-          onSubmit={(draft) => {
-            settingsMutation.mutate(draft)
-          }}
+          onSubmit={(draft) => settingsMutation.mutate(draft)}
           open={settingsOpen}
         />
-        <ConfirmDialog
-          confirmLabel="Delete room"
-          description="Everyone connected will be removed and the room route will stop working."
-          onConfirm={() => {
-            deleteRoomMutation.mutate()
-          }}
-          onOpenChange={setDeleteDialogOpen}
-          open={deleteDialogOpen}
-          title={`Delete ${room.name}?`}
-        >
-          <span />
-        </ConfirmDialog>
-      </AppShell>
+      </PageHero>
     </>
   )
 }

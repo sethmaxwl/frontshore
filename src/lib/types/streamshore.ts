@@ -1,5 +1,3 @@
-export type ThemeMode = 'dark' | 'light'
-
 export type RoomPermissionLevel = 0 | 5 | 10 | 50 | 100
 
 export type AppConfig = {

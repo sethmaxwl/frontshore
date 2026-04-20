@@ -1,23 +1,31 @@
-import { css } from '@compiled/react'
-import { zodResolver } from '@hookform/resolvers/zod'
+import {
+  Button,
+  Card,
+  Group,
+  List,
+  NumberInput,
+  Paper,
+  SimpleGrid,
+  Stack,
+  Stepper,
+  Switch,
+  Text,
+  Textarea,
+  TextInput,
+  Title,
+  UnstyledButton,
+} from '@mantine/core'
+import { useForm } from '@mantine/form'
+import { notifications } from '@mantine/notifications'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { zodResolver } from 'mantine-form-zod-resolver'
 import { useMemo, useState } from 'react'
 import type { JSX } from 'react'
-import { useForm, useWatch } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
-import { toast } from 'sonner'
 import { z } from 'zod'
 
-import {
-  baseButtonStyles,
-  buttonStyles,
-  fieldStyles,
-  panelStyles,
-} from '../../components/primitives/styles.ts'
-
 import { useAuth } from '@/app/providers/AuthProvider'
-import { FormField } from '@/components/forms/FormField'
-import { AppShell } from '@/components/layout/AppShell'
+import { PageHero } from '@/components/layout/PageHero'
 import { PageMetadata } from '@/components/metadata/PageMetadata'
 import { getApiErrorMessage } from '@/lib/api/client'
 import { createRoom } from '@/lib/api/streamshore'
@@ -59,109 +67,14 @@ const createRoomSchema = z.object({
 
 type CreateRoomValues = z.infer<typeof createRoomSchema>
 
-const pageStyles = css({
-  display: 'grid',
-  gap: '1.5rem',
-})
-
-const stepperStyles = css({
-  display: 'grid',
-  gap: '1rem',
-  gridTemplateColumns: 'repeat(4, minmax(0, 1fr))',
-  '@media (max-width: 760px)': {
-    gridTemplateColumns: '1fr',
-  },
-})
-
-const stepStyles = css({
-  display: 'grid',
-  gap: '0.25rem',
-  padding: '1rem',
-})
-
-const stepLabelStyles = css({
-  color: 'var(--color-accent)',
-  fontSize: '0.78rem',
-  fontWeight: 700,
-  letterSpacing: '0.1em',
-  margin: 0,
-  textTransform: 'uppercase',
-})
-
-const stepTitleStyles = css({
-  color: 'var(--color-text-strong)',
-  fontWeight: 800,
-  margin: 0,
-})
-
-const panelContentStyles = css({
-  display: 'grid',
-  gap: '1rem',
-  padding: '1.25rem',
-})
-
-const toggleGridStyles = css({
-  display: 'grid',
-  gap: '0.75rem',
-})
-
-const toggleLabelStyles = css({
-  alignItems: 'center',
-  color: 'var(--color-text-strong)',
-  display: 'flex',
-  gap: '0.75rem',
-  justifyContent: 'space-between',
-})
-
-const actionRowStyles = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '0.75rem',
-})
-
-const summaryStyles = css({
-  color: 'var(--color-text-muted)',
-  display: 'grid',
-  gap: '0.35rem',
-  margin: 0,
-})
-
-const roomTypeGridStyles = css({
-  display: 'grid',
-  gap: '0.75rem',
-  gridTemplateColumns: 'repeat(2, minmax(0, 1fr))',
-  '@media (max-width: 640px)': {
-    gridTemplateColumns: '1fr',
-  },
-})
-
-const roomTypeButtonStyles = css({
-  alignItems: 'start',
-  background: 'rgba(8, 17, 30, 0.62)',
-  cursor: 'pointer',
-  display: 'grid',
-  gap: '0.55rem',
-  minHeight: '10rem',
-  padding: '1rem',
-  textAlign: 'left',
-})
-
-const roomTypeActiveStyles = css({
-  borderColor: 'rgba(34, 211, 238, 0.35)',
-  boxShadow: '0 0 0 4px rgba(34, 211, 238, 0.08)',
-})
-
-function getStepLabel(step: number): string {
-  return ['Basic details', 'Chat options', 'Queue options', 'Review'][step - 1]
-}
-
 export default function CreateRoomPage(): JSX.Element {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const { session } = useAuth()
-  const [step, setStep] = useState(1)
+  const [step, setStep] = useState(0)
   const form = useForm<CreateRoomValues>({
-    defaultValues: {
+    mode: 'controlled',
+    initialValues: {
       anonymousChatting: true,
       anonymousQueueAdd: true,
       chatFilter: false,
@@ -174,13 +87,10 @@ export default function CreateRoomPage(): JSX.Element {
       roomType: 'Public',
       voteThreshold: 50,
     },
-    resolver: zodResolver(createRoomSchema),
+    validate: zodResolver(createRoomSchema),
   })
 
-  const values = useWatch({
-    control: form.control,
-    defaultValue: form.getValues(),
-  })
+  const values = form.getValues()
 
   const createRoomMutation = useMutation({
     mutationFn: async (submittedValues: CreateRoomValues) => {
@@ -204,13 +114,19 @@ export default function CreateRoomPage(): JSX.Element {
       })
     },
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to create room'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to create room'),
+      })
     },
     onSuccess: (room) => {
       void queryClient.invalidateQueries({ queryKey: ['landing'] })
       void queryClient.invalidateQueries({ queryKey: ['profile'] })
       void queryClient.invalidateQueries({ queryKey: ['rooms'] })
-      toast.success('Room created successfully.')
+      notifications.show({
+        color: 'teal',
+        message: 'Room created successfully.',
+      })
       void navigate(`/${room.route}`)
     },
   })
@@ -236,264 +152,239 @@ export default function CreateRoomPage(): JSX.Element {
     [values],
   )
 
+  function handleNext(): void {
+    let fields: Array<keyof CreateRoomValues>
+    if (step === 0) {
+      fields = ['roomName', 'roomMOTD', 'roomType']
+    } else if (step === 1) {
+      fields = ['anonymousChatting', 'chatFilter', 'chatLevel']
+    } else {
+      fields = [
+        'anonymousQueueAdd',
+        'maxInQueue',
+        'queueLevel',
+        'queueVoting',
+        'voteThreshold',
+      ]
+    }
+
+    const hasError = fields.some((field) => form.validateField(field).hasError)
+    if (!hasError) {
+      setStep((current) => current + 1)
+    }
+  }
+
   return (
     <>
       <PageMetadata
         description="Create a new synchronized Streamshore room with queue, chat, and moderation settings."
         title="Streamshore | Create Room"
       />
-      <AppShell
+      <PageHero
         eyebrow="Room creation"
         title="Launch a new room"
-        description="The new flow keeps the old backend payloads intact, but the UI collapses the legacy stepper into a cleaner React form surface."
+        description="Configure the name, chat policy, and queue rules for your new room in a few guided steps."
       >
-        <div css={pageStyles}>
-          <div css={stepperStyles}>
-            {Array.from({ length: 4 }, (_, index) => index + 1).map(
-              (currentStep) => (
-                <section key={currentStep} css={[panelStyles, stepStyles]}>
-                  <p css={stepLabelStyles}>Step {currentStep}</p>
-                  <p css={stepTitleStyles}>{getStepLabel(currentStep)}</p>
-                </section>
-              ),
-            )}
-          </div>
-
-          <form
-            css={[panelStyles, panelContentStyles]}
-            onSubmit={(event) => {
-              void form.handleSubmit((submittedValues) => {
-                createRoomMutation.mutate(submittedValues)
-              })(event)
-            }}
-          >
-            {step === 1 ? (
-              <>
-                <FormField
-                  error={form.formState.errors.roomName?.message}
-                  hint="This becomes the final room route slug."
-                  label="Room name"
-                >
-                  <input
-                    css={fieldStyles.input}
-                    {...form.register('roomName')}
+        <form
+          onSubmit={form.onSubmit((submittedValues) => {
+            createRoomMutation.mutate(submittedValues)
+          })}
+        >
+          <Paper p="xl" radius="md" withBorder>
+            <Stepper
+              active={step}
+              onStepClick={setStep}
+              allowNextStepsSelect={false}
+            >
+              <Stepper.Step
+                label="Basic details"
+                description="Name and visibility"
+              >
+                <Stack gap="md" mt="lg">
+                  <TextInput
+                    description="This becomes the final room route slug."
+                    label="Room name"
+                    {...form.getInputProps('roomName')}
                   />
-                </FormField>
-                <FormField label="Welcome message">
-                  <textarea
-                    css={fieldStyles.textarea}
-                    {...form.register('roomMOTD')}
+                  <Textarea
+                    label="Welcome message"
+                    autosize
+                    minRows={3}
+                    {...form.getInputProps('roomMOTD')}
                   />
-                </FormField>
-                <div css={roomTypeGridStyles}>
-                  {(['Public', 'Private'] as const).map((roomType) => (
-                    <button
-                      key={roomType}
-                      css={[
-                        panelStyles,
-                        roomTypeButtonStyles,
-                        values.roomType === roomType
-                          ? roomTypeActiveStyles
-                          : null,
-                      ]}
-                      onClick={(event) => {
-                        event.preventDefault()
-                        form.setValue('roomType', roomType)
-                      }}
-                      type="button"
-                    >
-                      <strong>{roomType} room</strong>
-                      <span>
-                        {roomType === 'Public'
-                          ? 'Visible on the landing page for anyone to join.'
-                          : 'Only accessible through friends or direct links.'}
-                      </span>
-                    </button>
-                  ))}
-                </div>
-              </>
-            ) : null}
+                  <Stack gap="xs">
+                    <Text fw={600} size="sm">
+                      Room type
+                    </Text>
+                    <SimpleGrid cols={{ base: 1, sm: 2 }} spacing="sm">
+                      {(['Public', 'Private'] as const).map((roomType) => {
+                        const active = values.roomType === roomType
+                        return (
+                          <UnstyledButton
+                            key={roomType}
+                            onClick={() =>
+                              form.setFieldValue('roomType', roomType)
+                            }
+                          >
+                            <Card
+                              padding="md"
+                              radius="md"
+                              withBorder
+                              style={{
+                                borderColor: active
+                                  ? 'var(--mantine-color-teal-5)'
+                                  : undefined,
+                                boxShadow: active
+                                  ? '0 0 0 3px var(--mantine-color-teal-light)'
+                                  : undefined,
+                              }}
+                            >
+                              <Stack gap={4}>
+                                <Text fw={700}>{roomType} room</Text>
+                                <Text c="dimmed" size="sm">
+                                  {roomType === 'Public'
+                                    ? 'Visible on the landing page for anyone to join.'
+                                    : 'Only accessible through friends or direct links.'}
+                                </Text>
+                              </Stack>
+                            </Card>
+                          </UnstyledButton>
+                        )
+                      })}
+                    </SimpleGrid>
+                  </Stack>
+                </Stack>
+              </Stepper.Step>
 
-            {step === 2 ? (
-              <div css={toggleGridStyles}>
-                <label css={toggleLabelStyles}>
-                  Allow anonymous chat participation
-                  <input
+              <Stepper.Step
+                label="Chat options"
+                description="Permissions and filter"
+              >
+                <Stack gap="md" mt="lg">
+                  <Switch
+                    label="Allow anonymous chat participation"
                     checked={values.anonymousChatting}
                     onChange={(event) => {
                       const checked = event.currentTarget.checked
-                      form.setValue('anonymousChatting', checked)
+                      form.setFieldValue('anonymousChatting', checked)
                       if (checked) {
-                        form.setValue('chatLevel', false)
+                        form.setFieldValue('chatLevel', false)
                       }
                     }}
-                    type="checkbox"
                   />
-                </label>
-                <label css={toggleLabelStyles}>
-                  Restrict chat to room managers
-                  <input
+                  <Switch
+                    label="Restrict chat to room managers"
                     checked={values.chatLevel}
                     onChange={(event) => {
                       const checked = event.currentTarget.checked
-                      form.setValue('chatLevel', checked)
+                      form.setFieldValue('chatLevel', checked)
                       if (checked) {
-                        form.setValue('anonymousChatting', false)
+                        form.setFieldValue('anonymousChatting', false)
                       }
                     }}
-                    type="checkbox"
                   />
-                </label>
-                <label css={toggleLabelStyles}>
-                  Enable the safe chat filter
-                  <input
+                  <Switch
+                    label="Enable the safe chat filter"
                     checked={values.chatFilter}
                     onChange={(event) => {
-                      form.setValue('chatFilter', event.currentTarget.checked)
+                      form.setFieldValue(
+                        'chatFilter',
+                        event.currentTarget.checked,
+                      )
                     }}
-                    type="checkbox"
                   />
-                </label>
-              </div>
-            ) : null}
+                </Stack>
+              </Stepper.Step>
 
-            {step === 3 ? (
-              <>
-                <div css={toggleGridStyles}>
-                  <label css={toggleLabelStyles}>
-                    Allow anonymous queue submissions
-                    <input
-                      checked={values.anonymousQueueAdd}
-                      onChange={(event) => {
-                        const checked = event.currentTarget.checked
-                        form.setValue('anonymousQueueAdd', checked)
-                        if (checked) {
-                          form.setValue('queueLevel', false)
-                        }
-                      }}
-                      type="checkbox"
-                    />
-                  </label>
-                  <label css={toggleLabelStyles}>
-                    Restrict queue submissions to managers
-                    <input
-                      checked={values.queueLevel}
-                      onChange={(event) => {
-                        const checked = event.currentTarget.checked
-                        form.setValue('queueLevel', checked)
-                        if (checked) {
-                          form.setValue('anonymousQueueAdd', false)
-                        }
-                      }}
-                      type="checkbox"
-                    />
-                  </label>
-                  <label css={toggleLabelStyles}>
-                    Enable vote-to-skip
-                    <input
-                      checked={values.queueVoting}
-                      onChange={(event) => {
-                        form.setValue(
-                          'queueVoting',
-                          event.currentTarget.checked,
-                        )
-                      }}
-                      type="checkbox"
-                    />
-                  </label>
-                </div>
-                <FormField
-                  error={form.formState.errors.maxInQueue?.message}
-                  label="Maximum number of queued videos"
-                >
-                  <input
-                    css={fieldStyles.input}
-                    type="number"
-                    {...form.register('maxInQueue', { valueAsNumber: true })}
+              <Stepper.Step
+                label="Queue options"
+                description="Submissions and voting"
+              >
+                <Stack gap="md" mt="lg">
+                  <Switch
+                    label="Allow anonymous queue submissions"
+                    checked={values.anonymousQueueAdd}
+                    onChange={(event) => {
+                      const checked = event.currentTarget.checked
+                      form.setFieldValue('anonymousQueueAdd', checked)
+                      if (checked) {
+                        form.setFieldValue('queueLevel', false)
+                      }
+                    }}
                   />
-                </FormField>
-                <FormField
-                  error={form.formState.errors.voteThreshold?.message}
-                  label="Vote threshold to skip the current video"
-                >
-                  <input
-                    css={fieldStyles.input}
-                    type="number"
-                    {...form.register('voteThreshold', { valueAsNumber: true })}
+                  <Switch
+                    label="Restrict queue submissions to managers"
+                    checked={values.queueLevel}
+                    onChange={(event) => {
+                      const checked = event.currentTarget.checked
+                      form.setFieldValue('queueLevel', checked)
+                      if (checked) {
+                        form.setFieldValue('anonymousQueueAdd', false)
+                      }
+                    }}
                   />
-                </FormField>
-              </>
-            ) : null}
+                  <Switch
+                    label="Enable vote-to-skip"
+                    checked={values.queueVoting}
+                    onChange={(event) => {
+                      form.setFieldValue(
+                        'queueVoting',
+                        event.currentTarget.checked,
+                      )
+                    }}
+                  />
+                  <NumberInput
+                    label="Maximum number of queued videos"
+                    min={0}
+                    {...form.getInputProps('maxInQueue')}
+                  />
+                  <NumberInput
+                    label="Vote threshold to skip the current video"
+                    min={1}
+                    max={100}
+                    suffix="%"
+                    {...form.getInputProps('voteThreshold')}
+                  />
+                </Stack>
+              </Stepper.Step>
 
-            {step === 4 ? (
-              <div css={summaryStyles}>
-                {summary.map((line) => (
-                  <p key={line}>{line}</p>
-                ))}
-              </div>
-            ) : null}
+              <Stepper.Completed>
+                <Stack gap="md" mt="lg">
+                  <Title order={3} size="h5">
+                    Review your room
+                  </Title>
+                  <List spacing="xs" size="sm">
+                    {summary.map((line) => (
+                      <List.Item key={line}>{line}</List.Item>
+                    ))}
+                  </List>
+                </Stack>
+              </Stepper.Completed>
+            </Stepper>
 
-            <div css={actionRowStyles}>
-              {step > 1 ? (
-                <button
-                  css={[baseButtonStyles, buttonStyles.secondary]}
-                  onClick={() => {
-                    setStep((currentStep) => currentStep - 1)
-                  }}
+            <Group justify="flex-end" mt="xl" gap="sm">
+              {step > 0 ? (
+                <Button
+                  onClick={() => setStep((current) => current - 1)}
+                  variant="default"
                   type="button"
                 >
                   Back
-                </button>
+                </Button>
               ) : null}
-              {step < 4 ? (
-                <button
-                  css={[baseButtonStyles, buttonStyles.primary]}
-                  onClick={() => {
-                    const fields =
-                      step === 1
-                        ? (['roomName', 'roomMOTD', 'roomType'] as const)
-                        : ([
-                            'anonymousQueueAdd',
-                            'maxInQueue',
-                            'queueLevel',
-                            'queueVoting',
-                            'voteThreshold',
-                          ] as const)
-
-                    const validationFields =
-                      step === 2
-                        ? ([
-                            'anonymousChatting',
-                            'chatFilter',
-                            'chatLevel',
-                          ] as const)
-                        : fields
-
-                    void form.trigger(validationFields).then((isStepValid) => {
-                      if (isStepValid) {
-                        setStep((currentStep) => currentStep + 1)
-                      }
-                    })
-                  }}
-                  type="button"
-                >
+              {step < 3 ? (
+                <Button onClick={handleNext} type="button">
                   Continue
-                </button>
+                </Button>
               ) : (
-                <button
-                  css={[baseButtonStyles, buttonStyles.primary]}
-                  disabled={createRoomMutation.isPending}
-                  type="submit"
-                >
-                  {createRoomMutation.isPending
-                    ? 'Creating room...'
-                    : 'Create room'}
-                </button>
+                <Button loading={createRoomMutation.isPending} type="submit">
+                  Create room
+                </Button>
               )}
-            </div>
-          </form>
-        </div>
-      </AppShell>
+            </Group>
+          </Paper>
+        </form>
+      </PageHero>
     </>
   )
 }

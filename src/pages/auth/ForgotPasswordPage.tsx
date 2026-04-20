@@ -1,19 +1,19 @@
-import { css } from '@compiled/react'
-import { zodResolver } from '@hookform/resolvers/zod'
+import {
+  Button,
+  Container,
+  Paper,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+} from '@mantine/core'
+import { useForm } from '@mantine/form'
+import { notifications } from '@mantine/notifications'
 import { useMutation } from '@tanstack/react-query'
+import { zodResolver } from 'mantine-form-zod-resolver'
 import type { JSX } from 'react'
-import { useForm } from 'react-hook-form'
-import { toast } from 'sonner'
 import { z } from 'zod'
 
-import {
-  baseButtonStyles,
-  buttonStyles,
-  fieldStyles,
-} from '../../components/primitives/styles.ts'
-
-import { FormField } from '@/components/forms/FormField'
-import { AuthCard } from '@/features/auth/components/AuthCard'
 import { getApiErrorMessage } from '@/lib/api/client'
 import { requestPasswordReset } from '@/lib/api/streamshore'
 
@@ -23,57 +23,58 @@ const schema = z.object({
 
 type ForgotPasswordValues = z.infer<typeof schema>
 
-const formStyles = css({
-  display: 'grid',
-  gap: '1rem',
-})
-
 export default function ForgotPasswordPage(): JSX.Element {
   const form = useForm<ForgotPasswordValues>({
-    defaultValues: {
-      email: '',
-    },
-    resolver: zodResolver(schema),
+    mode: 'uncontrolled',
+    initialValues: { email: '' },
+    validate: zodResolver(schema),
   })
 
   const mutation = useMutation({
     mutationFn: async ({ email }: ForgotPasswordValues) =>
       requestPasswordReset(email),
     onError: (error) => {
-      toast.error(getApiErrorMessage(error, 'Unable to request password reset'))
+      notifications.show({
+        color: 'red',
+        message: getApiErrorMessage(error, 'Unable to request password reset'),
+      })
     },
     onSuccess: (_, values) => {
-      toast.success(`A reset email has been sent to ${values.email}.`)
+      notifications.show({
+        color: 'teal',
+        message: `A reset email has been sent to ${values.email}.`,
+      })
     },
   })
 
   return (
-    <AuthCard
-      description="Enter the email address tied to your Streamshore account and we’ll send a reset link."
-      title="Forgot your password?"
-    >
-      <form
-        css={formStyles}
-        onSubmit={(event) => {
-          void form.handleSubmit((values) => {
-            mutation.mutate(values)
-          })(event)
-        }}
-      >
-        <FormField
-          error={form.formState.errors.email?.message}
-          label="Email address"
-        >
-          <input css={fieldStyles.input} {...form.register('email')} />
-        </FormField>
-        <button
-          css={[baseButtonStyles, buttonStyles.primary]}
-          disabled={mutation.isPending}
-          type="submit"
-        >
-          {mutation.isPending ? 'Sending...' : 'Send reset email'}
-        </button>
-      </form>
-    </AuthCard>
+    <Container size="xs" py="xl">
+      <Paper p="xl" radius="md" withBorder>
+        <Stack gap="lg">
+          <Stack gap="xs">
+            <Text c="teal" fw={700} size="xs" tt="uppercase">
+              Account recovery
+            </Text>
+            <Title order={1}>Forgot your password?</Title>
+            <Text c="dimmed">
+              Enter the email tied to your Streamshore account and we&apos;ll
+              send a reset link.
+            </Text>
+          </Stack>
+
+          <form onSubmit={form.onSubmit((values) => mutation.mutate(values))}>
+            <Stack gap="md">
+              <TextInput
+                label="Email address"
+                {...form.getInputProps('email')}
+              />
+              <Button loading={mutation.isPending} type="submit" fullWidth>
+                Send reset email
+              </Button>
+            </Stack>
+          </form>
+        </Stack>
+      </Paper>
+    </Container>
   )
 }

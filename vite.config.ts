@@ -1,7 +1,6 @@
 import type { IncomingMessage, ServerResponse } from 'node:http'
 import { fileURLToPath } from 'node:url'
 
-import compiled from '@compiled/vite-plugin'
 import babel from '@rolldown/plugin-babel'
 import react, { reactCompilerPreset } from '@vitejs/plugin-react'
 import { defineConfig } from 'vitest/config'
@@ -70,10 +69,6 @@ function createBrowserChecksApiPlugin() {
 // https://vite.dev/config/
 export default defineConfig({
   plugins: [
-    compiled({
-      extract: false,
-      importReact: false,
-    }),
     react(),
     babel({ presets: [reactCompilerPreset()] }),
     ...(browserChecksFixturesEnabled ? [createBrowserChecksApiPlugin()] : []),

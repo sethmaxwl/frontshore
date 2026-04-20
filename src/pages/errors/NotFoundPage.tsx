@@ -1,29 +1,10 @@
-import { css } from '@compiled/react'
+import { Anchor, Button, Image, Stack } from '@mantine/core'
 import type { JSX } from 'react'
 import { Link } from 'react-router-dom'
 
-import {
-  baseButtonStyles,
-  buttonStyles,
-} from '../../components/primitives/styles.ts'
-
 import notFoundIllustrationUrl from '@/assets/404.svg'
-import { AppShell } from '@/components/layout/AppShell'
+import { PageHero } from '@/components/layout/PageHero'
 import { PageMetadata } from '@/components/metadata/PageMetadata'
-
-const shellStyles = css({
-  alignItems: 'center',
-  display: 'grid',
-  gap: '1.5rem',
-  justifyItems: 'center',
-  paddingBottom: '3rem',
-  textAlign: 'center',
-})
-
-const imageStyles = css({
-  maxWidth: '26rem',
-  width: '100%',
-})
 
 export default function NotFoundPage(): JSX.Element {
   return (
@@ -32,22 +13,26 @@ export default function NotFoundPage(): JSX.Element {
         description="The Streamshore room or route you requested could not be found."
         title="Streamshore | Not Found"
       />
-      <AppShell
+      <PageHero
         eyebrow="404"
         title="That room drifted off the map."
-        description="The React migration keeps the old deep links, but this one does not point to a room or route we can open."
+        description="This link does not point to a room or route we can open."
       >
-        <div css={shellStyles}>
-          <img
+        <Stack align="center" gap="lg" pb="xl">
+          <Image
             alt="A floating 404 illustration"
-            css={imageStyles}
             src={notFoundIllustrationUrl}
+            maw={416}
+            w="100%"
           />
-          <Link css={[baseButtonStyles, buttonStyles.primary]} to="/">
+          <Button component={Link} to="/" size="md">
             Return to discovery
-          </Link>
-        </div>
-      </AppShell>
+          </Button>
+          <Anchor component={Link} to="/search">
+            Or search for a room
+          </Anchor>
+        </Stack>
+      </PageHero>
     </>
   )
 }

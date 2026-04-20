@@ -1,16 +1,19 @@
-import { css } from '@compiled/react'
+import {
+  AspectRatio,
+  Button,
+  Card,
+  Group,
+  Paper,
+  Progress,
+  Slider,
+  Stack,
+  Text,
+  Title,
+} from '@mantine/core'
 import { useEffect, useRef, useState } from 'react'
 import type { JSX } from 'react'
 import YouTube from 'react-youtube'
 
-import {
-  baseButtonStyles,
-  buttonStyles,
-  fieldStyles,
-} from '../../../components/primitives/styles.ts'
-
-import { EmptyState } from '@/components/feedback/EmptyState'
-import { SurfaceCard } from '@/components/primitives/SurfaceCard'
 import {
   loadStoredValue,
   saveStoredValue,
@@ -18,64 +21,6 @@ import {
 } from '@/lib/storage/persistence'
 import type { RoomVideo } from '@/lib/types/streamshore'
 import { formatVideoDuration } from '@/lib/utils/media'
-
-const shellStyles = css({
-  display: 'grid',
-  gap: '1rem',
-})
-
-const videoFrameStyles = css({
-  aspectRatio: '16 / 9',
-  border: '1px solid var(--color-border)',
-  borderRadius: '24px',
-  overflow: 'hidden',
-  width: '100%',
-})
-
-const controlsStyles = css({
-  alignItems: 'center',
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '0.75rem',
-  justifyContent: 'space-between',
-})
-
-const titleStyles = css({
-  color: 'var(--color-text-strong)',
-  fontSize: '1.1rem',
-  fontWeight: 800,
-  margin: 0,
-})
-
-const metaStyles = css({
-  color: 'var(--color-text-muted)',
-  margin: 0,
-})
-
-const actionWrapStyles = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '0.55rem',
-})
-
-const progressTrackStyles = css({
-  background: 'rgba(148, 163, 184, 0.14)',
-  borderRadius: '999px',
-  height: '0.5rem',
-  overflow: 'hidden',
-  width: '100%',
-})
-
-const progressFillStyles = css({
-  background:
-    'linear-gradient(135deg, rgba(34, 211, 238, 1), rgba(59, 130, 246, 0.88))',
-  borderRadius: '999px',
-  height: '100%',
-})
-
-const rangeStyles = css({
-  width: '9rem',
-})
 
 type RoomVideoPlayerProps = {
   canSkipVideo: boolean
@@ -186,94 +131,91 @@ export function RoomVideoPlayer({
 
   if (!currentVideo) {
     return (
-      <EmptyState
-        description="Add a YouTube video to start playback in this room."
-        title="No video is currently playing"
-      />
+      <Paper p="xl" radius="md" withBorder>
+        <Stack gap="xs" align="center" ta="center">
+          <Title order={3} size="h5">
+            No video is currently playing
+          </Title>
+          <Text c="dimmed" size="sm">
+            Add a YouTube video to start playback in this room.
+          </Text>
+        </Stack>
+      </Paper>
     )
   }
 
   return (
-    <SurfaceCard as="section">
-      <div css={shellStyles}>
-        <div ref={containerReference} css={videoFrameStyles}>
-          <YouTube
-            opts={playerOptions}
-            onReady={(event) => {
-              const player = event.target as StreamshoreYouTubePlayer
+    <Card padding="md" radius="md" withBorder>
+      <Stack gap="md">
+        <div ref={containerReference}>
+          <AspectRatio ratio={16 / 9}>
+            <YouTube
+              opts={playerOptions}
+              onReady={(event) => {
+                const player = event.target as StreamshoreYouTubePlayer
 
-              playerReference.current = player
-              void player.setVolume(volume)
-            }}
-            style={{ height: '100%', width: '100%' }}
-            videoId={currentVideo.id}
-          />
+                playerReference.current = player
+                void player.setVolume(volume)
+              }}
+              style={{ height: '100%', width: '100%' }}
+              videoId={currentVideo.id}
+            />
+          </AspectRatio>
         </div>
 
-        <div css={controlsStyles}>
-          <div>
-            <p css={titleStyles}>{currentVideo.title}</p>
-            <p css={metaStyles}>
+        <Group justify="space-between" wrap="wrap" gap="sm">
+          <Stack gap={2} style={{ minWidth: 0 }}>
+            <Text fw={700}>{currentVideo.title}</Text>
+            <Text c="dimmed" size="sm">
               {currentTimeLabel} / {durationLabel}
-            </p>
-          </div>
-          <div css={actionWrapStyles}>
+            </Text>
+          </Stack>
+          <Group gap="xs" wrap="wrap">
             {canSkipVideo ? (
-              <button
-                css={[baseButtonStyles, buttonStyles.secondary]}
-                onClick={onSkipVideo}
-                type="button"
-              >
+              <Button onClick={onSkipVideo} variant="default" type="button">
                 Skip video
-              </button>
+              </Button>
             ) : null}
             {votingEnabled && !hasVoted ? (
-              <button
-                css={[baseButtonStyles, buttonStyles.secondary]}
+              <Button
                 onClick={() => {
                   onVoteToSkip()
                   setHasVoted(true)
                 }}
+                variant="default"
                 type="button"
               >
                 Vote to skip
-              </button>
+              </Button>
             ) : null}
-            <button
-              css={[baseButtonStyles, buttonStyles.secondary]}
+            <Button
               onClick={() => {
                 void containerReference.current?.requestFullscreen()
               }}
+              variant="default"
               type="button"
             >
               Fullscreen
-            </button>
-          </div>
-        </div>
+            </Button>
+          </Group>
+        </Group>
 
-        <div css={progressTrackStyles}>
-          <div
-            css={progressFillStyles}
-            style={{
-              width: `${Math.max(0, Math.min(progressPercentage, 100))}%`,
-            }}
-          />
-        </div>
+        <Progress value={Math.max(0, Math.min(progressPercentage, 100))} />
 
-        <label css={metaStyles}>
-          Volume
-          <input
-            css={[fieldStyles.input, rangeStyles]}
-            max="100"
-            min="0"
-            onChange={(event) => {
-              setVolume(Number(event.currentTarget.value))
-            }}
-            type="range"
+        <Group gap="sm" align="center">
+          <Text c="dimmed" size="sm" style={{ minWidth: '4rem' }}>
+            Volume
+          </Text>
+          <Slider
+            aria-label="Volume"
+            min={0}
+            max={100}
+            onChange={setVolume}
+            style={{ flex: 1 }}
             value={volume}
           />
-        </label>
-      </div>
-    </SurfaceCard>
+        </Group>
+      </Stack>
+    </Card>
   )
 }

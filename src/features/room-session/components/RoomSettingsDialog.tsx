@@ -1,63 +1,21 @@
-import { css } from '@compiled/react'
-import { zodResolver } from '@hookform/resolvers/zod'
-import * as Dialog from '@radix-ui/react-dialog'
+import {
+  Button,
+  Center,
+  Group,
+  Loader,
+  Modal,
+  NumberInput,
+  Stack,
+  Switch,
+  Textarea,
+} from '@mantine/core'
+import { useForm } from '@mantine/form'
+import { zodResolver } from 'mantine-form-zod-resolver'
 import { useEffect } from 'react'
 import type { JSX } from 'react'
-import { useForm } from 'react-hook-form'
 import { z } from 'zod'
 
-import {
-  baseButtonStyles,
-  buttonStyles,
-  fieldStyles,
-} from '../../../components/primitives/styles.ts'
-
-import { FormField } from '@/components/forms/FormField'
 import type { RoomSettingsDraft } from '@/lib/types/streamshore'
-
-const dialogOverlayStyles = css({
-  backdropFilter: 'blur(10px)',
-  background: 'rgba(2, 6, 23, 0.72)',
-  inset: 0,
-  position: 'fixed',
-  zIndex: 40,
-})
-
-const dialogContentStyles = css({
-  background: 'rgba(5, 15, 28, 0.96)',
-  border: '1px solid var(--color-border)',
-  borderRadius: '24px',
-  boxShadow: 'var(--shadow-panel)',
-  left: '50%',
-  maxHeight: '80vh',
-  maxWidth: '48rem',
-  overflowY: 'auto',
-  padding: '1.2rem',
-  position: 'fixed',
-  top: '50%',
-  transform: 'translate(-50%, -50%)',
-  width: 'calc(100% - 2rem)',
-  zIndex: 41,
-})
-
-const formStyles = css({
-  display: 'grid',
-  gap: '1rem',
-})
-
-const toggleLabelStyles = css({
-  alignItems: 'center',
-  color: 'var(--color-text-strong)',
-  display: 'flex',
-  gap: '0.75rem',
-  justifyContent: 'space-between',
-})
-
-const actionRowStyles = css({
-  display: 'flex',
-  flexWrap: 'wrap',
-  gap: '0.75rem',
-})
 
 const schema = z.object({
   anon_chat: z.boolean(),
@@ -81,6 +39,19 @@ type RoomSettingsDialogProps = {
   open: boolean
 }
 
+const emptyValues: RoomSettingsDraft = {
+  anon_chat: true,
+  anon_queue: true,
+  chat_filter: false,
+  chat_level: false,
+  motd: '',
+  queue_level: false,
+  queue_limit: 0,
+  route: '',
+  vote_enable: true,
+  vote_threshold: 50,
+}
+
 export function RoomSettingsDialog({
   initialValues,
   isLoading,
@@ -90,114 +61,101 @@ export function RoomSettingsDialog({
   open,
 }: RoomSettingsDialogProps): JSX.Element {
   const form = useForm<RoomSettingsDraft>({
-    defaultValues: initialValues,
-    resolver: zodResolver(schema),
+    mode: 'controlled',
+    initialValues: initialValues ?? emptyValues,
+    validate: zodResolver(schema),
   })
 
   useEffect(() => {
     if (initialValues) {
-      form.reset(initialValues)
+      form.setValues(initialValues)
+      form.resetDirty(initialValues)
     }
-  }, [form, initialValues])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [initialValues])
 
   return (
-    <Dialog.Root onOpenChange={onOpenChange} open={open}>
-      <Dialog.Portal>
-        <Dialog.Overlay css={dialogOverlayStyles} />
-        <Dialog.Content css={dialogContentStyles}>
-          <form
-            css={formStyles}
-            onSubmit={(event) => {
-              void form.handleSubmit((values) => {
-                onSubmit(values)
-              })(event)
-            }}
-          >
-            <Dialog.Title>Room settings</Dialog.Title>
+    <Modal
+      onClose={() => onOpenChange(false)}
+      opened={open}
+      size="xl"
+      title="Room settings"
+    >
+      <form onSubmit={form.onSubmit(onSubmit)}>
+        <Stack gap="md">
+          {isLoading ? (
+            <Center py="xl">
+              <Loader />
+            </Center>
+          ) : (
+            <>
+              <Textarea
+                autosize
+                label="Welcome message"
+                minRows={2}
+                {...form.getInputProps('motd')}
+              />
+              <Switch
+                label="Allow anonymous chat participation"
+                {...form.getInputProps('anon_chat', { type: 'checkbox' })}
+              />
+              <Switch
+                label="Restrict chat to managers"
+                {...form.getInputProps('chat_level', { type: 'checkbox' })}
+              />
+              <Switch
+                label="Enable safe chat filter"
+                {...form.getInputProps('chat_filter', { type: 'checkbox' })}
+              />
+              <Switch
+                label="Allow anonymous queue submissions"
+                {...form.getInputProps('anon_queue', { type: 'checkbox' })}
+              />
+              <Switch
+                label="Restrict queue submissions to managers"
+                {...form.getInputProps('queue_level', { type: 'checkbox' })}
+              />
+              <Switch
+                label="Enable vote-to-skip"
+                {...form.getInputProps('vote_enable', { type: 'checkbox' })}
+              />
+              <NumberInput
+                label="Queue limit"
+                min={0}
+                {...form.getInputProps('queue_limit')}
+              />
+              <NumberInput
+                label="Vote threshold"
+                min={1}
+                max={100}
+                suffix="%"
+                {...form.getInputProps('vote_threshold')}
+              />
+            </>
+          )}
 
-            {isLoading ? (
-              <p>Loading current settings...</p>
-            ) : (
-              <>
-                <FormField label="Welcome message">
-                  <textarea
-                    css={fieldStyles.textarea}
-                    {...form.register('motd')}
-                  />
-                </FormField>
-
-                <label css={toggleLabelStyles}>
-                  Allow anonymous chat participation
-                  <input type="checkbox" {...form.register('anon_chat')} />
-                </label>
-                <label css={toggleLabelStyles}>
-                  Restrict chat to managers
-                  <input type="checkbox" {...form.register('chat_level')} />
-                </label>
-                <label css={toggleLabelStyles}>
-                  Enable safe chat filter
-                  <input type="checkbox" {...form.register('chat_filter')} />
-                </label>
-                <label css={toggleLabelStyles}>
-                  Allow anonymous queue submissions
-                  <input type="checkbox" {...form.register('anon_queue')} />
-                </label>
-                <label css={toggleLabelStyles}>
-                  Restrict queue submissions to managers
-                  <input type="checkbox" {...form.register('queue_level')} />
-                </label>
-                <label css={toggleLabelStyles}>
-                  Enable vote-to-skip
-                  <input type="checkbox" {...form.register('vote_enable')} />
-                </label>
-
-                <FormField label="Queue limit">
-                  <input
-                    css={fieldStyles.input}
-                    type="number"
-                    {...form.register('queue_limit', { valueAsNumber: true })}
-                  />
-                </FormField>
-
-                <FormField label="Vote threshold">
-                  <input
-                    css={fieldStyles.input}
-                    type="number"
-                    {...form.register('vote_threshold', {
-                      valueAsNumber: true,
-                    })}
-                  />
-                </FormField>
-              </>
-            )}
-
-            <div css={actionRowStyles}>
-              <button
-                css={[baseButtonStyles, buttonStyles.primary]}
-                type="submit"
-              >
-                Save settings
-              </button>
-              <button
-                css={[baseButtonStyles, buttonStyles.secondary]}
-                onClick={() => {
-                  onOpenChange(false)
-                }}
+          <Group justify="space-between" wrap="wrap" gap="sm" mt="sm">
+            <Button
+              color="red"
+              onClick={onDeleteRoom}
+              type="button"
+              variant="light"
+            >
+              Delete room
+            </Button>
+            <Group gap="sm">
+              <Button
+                onClick={() => onOpenChange(false)}
                 type="button"
+                variant="default"
               >
                 Close
-              </button>
-              <button
-                css={[baseButtonStyles, buttonStyles.danger]}
-                onClick={onDeleteRoom}
-                type="button"
-              >
-                Delete room
-              </button>
-            </div>
-          </form>
-        </Dialog.Content>
-      </Dialog.Portal>
-    </Dialog.Root>
+              </Button>
+              <Button type="submit">Save settings</Button>
+            </Group>
+          </Group>
+        </Stack>
+      </form>
+    </Modal>
   )
 }

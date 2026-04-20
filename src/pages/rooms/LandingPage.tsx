@@ -1,54 +1,14 @@
-import { css } from '@compiled/react'
+import { Button, Group, Paper, SimpleGrid, Stack, Text } from '@mantine/core'
 import { useQuery } from '@tanstack/react-query'
 import type { JSX } from 'react'
 import { Link } from 'react-router-dom'
 
-import {
-  baseButtonStyles,
-  buttonStyles,
-  panelStyles,
-} from '../../components/primitives/styles.ts'
-
 import { useAuth } from '@/app/providers/AuthProvider'
-import { AppShell } from '@/components/layout/AppShell'
+import { PageHero } from '@/components/layout/PageHero'
 import { PageMetadata } from '@/components/metadata/PageMetadata'
 import { RoomSection } from '@/features/rooms/components/RoomSection'
 import { fetchFavorites, fetchFriends, fetchRooms } from '@/lib/api/streamshore'
 import { buildRoomSections } from '@/lib/utils/rooms'
-
-const heroMetricsStyles = css({
-  display: 'grid',
-  gap: '0.75rem',
-  gridTemplateColumns: 'repeat(3, minmax(0, 1fr))',
-  maxWidth: '30rem',
-  width: '100%',
-  '@media (max-width: 700px)': {
-    gridTemplateColumns: '1fr',
-  },
-})
-
-const metricCardStyles = css({
-  display: 'grid',
-  gap: '0.35rem',
-  padding: '1rem',
-})
-
-const metricValueStyles = css({
-  color: 'var(--color-text-strong)',
-  fontSize: '1.5rem',
-  fontWeight: 800,
-  margin: 0,
-})
-
-const metricLabelStyles = css({
-  color: 'var(--color-text-muted)',
-  margin: 0,
-})
-
-const contentStyles = css({
-  display: 'grid',
-  gap: '2rem',
-})
 
 type LandingData = {
   favoriteRooms: Awaited<ReturnType<typeof fetchFavorites>>
@@ -117,40 +77,48 @@ export default function LandingPage(): JSX.Element {
   return (
     <>
       <PageMetadata
-        description="Discover public rooms, reconnect with favorite spaces, and launch fresh synchronized watch parties on the new React Streamshore frontend."
+        description="Discover public rooms, reconnect with favorite spaces, and launch fresh synchronized watch parties on Streamshore."
         title="Streamshore | Discover"
       />
-      <AppShell
+      <PageHero
         actions={
-          <>
-            <Link
-              css={[baseButtonStyles, buttonStyles.secondary]}
+          <Group gap="sm" wrap="wrap">
+            <Button
+              component={Link}
               to="/search?q=watch"
+              variant="default"
+              size="md"
             >
               Search Rooms
-            </Link>
-            <Link
-              css={[baseButtonStyles, buttonStyles.primary]}
+            </Button>
+            <Button
+              component={Link}
               to={isAuthenticated ? '/create-room' : '/register'}
+              size="md"
             >
               {isAuthenticated ? 'Launch a room' : 'Create an account'}
-            </Link>
-          </>
+            </Button>
+          </Group>
         }
-        eyebrow="Realtime rooms"
-        subtitle="The Vue-era feature set now sits behind a faster route tree, stronger client state boundaries, and a slimmer initial bundle."
-        title="Watch together without the old frontend drag."
-        description="Streamshore keeps synchronized playback, live chat, playlists, and moderation tools, but this migration rebuilds the product around modern React patterns and a denser control-room UI."
+        subtitle="Synchronized playback, live chat, playlists, and moderation tools in one dense control room."
+        title="Watch together, in sync."
+        description="Discover active rooms, jump back into your favorites, or spin up a new one for your group."
       >
-        <div css={contentStyles}>
-          <div css={heroMetricsStyles}>
+        <Stack gap="xl">
+          <SimpleGrid cols={{ base: 1, sm: 3 }} spacing="md">
             {getLandingMetrics(landingData).map((metric) => (
-              <section key={metric.label} css={[panelStyles, metricCardStyles]}>
-                <p css={metricValueStyles}>{metric.value}</p>
-                <p css={metricLabelStyles}>{metric.label}</p>
-              </section>
+              <Paper key={metric.label} p="lg" radius="md" withBorder>
+                <Stack gap={4}>
+                  <Text fw={800} size="xl">
+                    {metric.value}
+                  </Text>
+                  <Text c="dimmed" size="sm">
+                    {metric.label}
+                  </Text>
+                </Stack>
+              </Paper>
             ))}
-          </div>
+          </SimpleGrid>
 
           {roomSections.map((section) => (
             <RoomSection
@@ -160,8 +128,8 @@ export default function LandingPage(): JSX.Element {
               title={section.title}
             />
           ))}
-        </div>
-      </AppShell>
+        </Stack>
+      </PageHero>
     </>
   )
 }
