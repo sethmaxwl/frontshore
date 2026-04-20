@@ -29,7 +29,7 @@
     "size:why": "yarn build && size-limit --why",
     "perf:lighthouse": "node ./scripts/run-lighthouse-ci.mjs",
     "check": "yarn typecheck && yarn lint && yarn format:check && yarn knip",
-    "ci:verify": "yarn check && yarn test:coverage && yarn build && yarn build-storybook && size-limit",
+    "ci:verify": "yarn check && yarn test:coverage && yarn build && yarn build-storybook && size-limit && yarn playwright:test",
     "preview": "vite preview"
   },
   "engines": {

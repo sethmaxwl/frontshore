@@ -37,13 +37,14 @@ yarn dev              # Start the Vite dev server
 yarn check            # Typecheck, lint, and format-check
 yarn test             # Run unit tests
 yarn test:coverage    # Run unit tests with coverage thresholds
+yarn playwright:install # Install Chromium for browser checks
 yarn playwright:test  # Run end-to-end and accessibility browser tests
 yarn storybook        # Start Storybook
 yarn build-storybook  # Build Storybook
 yarn knip             # Find unused files, exports, and dependencies
 yarn size             # Build and enforce bundle-size budgets
 yarn perf:lighthouse  # Build and run Lighthouse CI locally
-yarn ci:verify        # Run the main quality gate used in CI
+yarn ci:verify        # Run the main quality gate used in CI, including Playwright
 ```
 
 ## Automation
@@ -52,8 +53,7 @@ yarn ci:verify        # Run the main quality gate used in CI
   - `pre-commit` runs `lint-staged`
   - `pre-push` runs `yarn check && yarn test:coverage && yarn knip`
 - GitHub Actions:
-  - quality checks
-  - Playwright end-to-end coverage
+  - quality checks, including Playwright browser coverage
   - Lighthouse CI reports
 - Dependabot:
   - npm dependency updates

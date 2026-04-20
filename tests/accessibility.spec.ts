@@ -5,7 +5,7 @@ import { browserCheckSearchQuery } from './fixtures/browserChecks'
 
 const routes = [
   {
-    heading: /watch together without the old frontend drag/i,
+    heading: /watch together, in sync\./i,
     name: 'discover',
     path: '/',
   },

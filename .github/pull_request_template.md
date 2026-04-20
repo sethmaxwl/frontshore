@@ -5,7 +5,6 @@
 ## Validation
 
 - [ ] `yarn ci:verify`
-- [ ] `yarn playwright:test`
 - [ ] I intentionally skipped one or more checks and explained why in the PR description.
 
 ## Review Checklist

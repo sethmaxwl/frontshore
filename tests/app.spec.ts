@@ -10,7 +10,7 @@ test('lets guests browse discovery and search flows', async ({ page }) => {
 
   await expect(
     page.getByRole('heading', {
-      name: /watch together without the old frontend drag/i,
+      name: /watch together, in sync\./i,
     }),
   ).toBeVisible()
 
