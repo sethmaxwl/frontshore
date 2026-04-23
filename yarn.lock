@@ -4763,6 +4763,11 @@ __metadata:
     vite: "npm:^8.0.9"
     vitest: "npm:^4.1.5"
     zod: "npm:^4.3.6"
+  dependenciesMeta:
+    esbuild:
+      built: true
+    unrs-resolver:
+      built: true
   languageName: unknown
   linkType: soft
 
