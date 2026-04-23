@@ -44,4 +44,27 @@ describe('persistence', () => {
 
     expect(loadStoredValue(storageKeys.playerVolume, 100)).toBe(100)
   })
+
+  it('treats storage operations as no-ops when window is unavailable', () => {
+    const windowDescriptor = Object.getOwnPropertyDescriptor(
+      globalThis,
+      'window',
+    )
+
+    try {
+      expect(Reflect.deleteProperty(globalThis, 'window')).toBe(true)
+
+      expect(loadStoredValue(storageKeys.theme, 'dark')).toBe('dark')
+      expect(() => {
+        saveStoredValue(storageKeys.theme, 'light')
+      }).not.toThrow()
+      expect(() => {
+        removeStoredValue(storageKeys.theme)
+      }).not.toThrow()
+    } finally {
+      if (windowDescriptor) {
+        Object.defineProperty(globalThis, 'window', windowDescriptor)
+      }
+    }
+  })
 })

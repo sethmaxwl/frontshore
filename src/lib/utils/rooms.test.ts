@@ -82,4 +82,30 @@ describe('rooms utils', () => {
       'blue-drift',
     ])
   })
+
+  it('sorts equally active rooms alphabetically by name', () => {
+    const tiedRooms: RoomSummary[] = [
+      {
+        name: 'Beta Bay',
+        owner: 'marina',
+        privacy: 0,
+        route: 'beta-bay',
+        thumbnail: null,
+        users: 4,
+      },
+      {
+        name: 'Alpha Anchorage',
+        owner: 'marina',
+        privacy: 0,
+        route: 'alpha-anchorage',
+        thumbnail: null,
+        users: 4,
+      },
+    ]
+
+    expect(getPublicRooms(tiedRooms).map((room) => room.route)).toEqual([
+      'alpha-anchorage',
+      'beta-bay',
+    ])
+  })
 })
