@@ -1,9 +1,6 @@
 import { expect, test } from '@playwright/test'
 
-import {
-  browserCheckRooms,
-  browserCheckSearchQuery,
-} from './fixtures/browserChecks'
+import { browserCheckSearchQuery } from './fixtures/browserChecks'
 
 test('lets guests browse discovery and search flows', async ({ page }) => {
   await page.goto('/')
@@ -14,24 +11,26 @@ test('lets guests browse discovery and search flows', async ({ page }) => {
     }),
   ).toBeVisible()
 
-  await page.getByRole('link', { name: /search rooms/i }).click()
+  const navigationSearch = page.getByRole('searchbox', {
+    name: /search public rooms/i,
+  })
 
+  await navigationSearch.fill(browserCheckSearchQuery)
   await expect(
-    page.getByRole('heading', {
-      name: /find the next room faster/i,
+    page.getByRole('link', {
+      name: /^Watch Party Central Hosted by casey 18 users$/,
     }),
   ).toBeVisible()
-  await expect(page).toHaveURL(
-    new RegExp(String.raw`/search\?q=${browserCheckSearchQuery}$`),
-  )
   await expect(
-    page.getByRole('heading', { name: /^2 results for "watch"$/i }),
+    page.getByRole('link', {
+      name: /^Late Night Watch Club Hosted by morgan 7 users$/,
+    }),
   ).toBeVisible()
   await expect(
-    page.getByRole('heading', { name: browserCheckRooms[0].name }),
-  ).toBeVisible()
+    page.getByRole('link', { name: /Green Room Ops Hosted by ops/i }),
+  ).toHaveCount(0)
   await expect(
-    page.getByRole('heading', { name: browserCheckRooms[1].name }),
+    page.getByText(/press enter to open the top match/i),
   ).toBeVisible()
 })
 

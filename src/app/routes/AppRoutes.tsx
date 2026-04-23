@@ -1,7 +1,7 @@
 import { Center, Loader } from '@mantine/core'
 import { Suspense, lazy } from 'react'
 import type { JSX, LazyExoticComponent } from 'react'
-import { createBrowserRouter, RouterProvider } from 'react-router-dom'
+import { Navigate, createBrowserRouter, RouterProvider } from 'react-router-dom'
 
 import { AppProviders } from '@/app/providers/AppProviders'
 import { GuestOnlyRoute, ProtectedRoute } from '@/app/routes/RouteGuards'
@@ -10,7 +10,6 @@ import { RootLayout } from '@/components/layout/RootLayout'
 const rootLayoutElement: JSX.Element = <RootLayout />
 
 const LandingPage = lazy(() => import('@/pages/rooms/LandingPage'))
-const SearchRoomsPage = lazy(() => import('@/pages/rooms/SearchRoomsPage'))
 const CreateRoomPage = lazy(() => import('@/pages/rooms/CreateRoomPage'))
 const LoginPage = lazy(() => import('@/pages/auth/LoginPage'))
 const RegisterPage = lazy(() => import('@/pages/auth/RegisterPage'))
@@ -54,7 +53,7 @@ const router = createBrowserRouter([
       },
       {
         path: 'search',
-        element: <LazyRouteElement component={SearchRoomsPage} />,
+        element: <Navigate replace to="/" />,
       },
       {
         element: <GuestOnlyRoute />,

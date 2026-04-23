@@ -1,4 +1,4 @@
-import { Button, Group, Paper, SimpleGrid, Stack, Text } from '@mantine/core'
+import { Button, Paper, SimpleGrid, Stack, Text } from '@mantine/core'
 import { useQuery } from '@tanstack/react-query'
 import type { JSX } from 'react'
 import { Link } from 'react-router-dom'
@@ -82,23 +82,13 @@ export default function LandingPage(): JSX.Element {
       />
       <PageHero
         actions={
-          <Group gap="sm" wrap="wrap">
-            <Button
-              component={Link}
-              to="/search?q=watch"
-              variant="default"
-              size="md"
-            >
-              Search Rooms
-            </Button>
-            <Button
-              component={Link}
-              to={isAuthenticated ? '/create-room' : '/register'}
-              size="md"
-            >
-              {isAuthenticated ? 'Launch a room' : 'Create an account'}
-            </Button>
-          </Group>
+          <Button
+            component={Link}
+            to={isAuthenticated ? '/create-room' : '/register'}
+            size="md"
+          >
+            {isAuthenticated ? 'Launch a room' : 'Create an account'}
+          </Button>
         }
         subtitle="Synchronized playback, live chat, playlists, and moderation tools in one dense control room."
         title="Watch together, in sync."

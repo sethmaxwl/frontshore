@@ -1,18 +1,11 @@
 import AxeBuilder from '@axe-core/playwright'
 import { expect, test } from '@playwright/test'
 
-import { browserCheckSearchQuery } from './fixtures/browserChecks'
-
 const routes = [
   {
     heading: /watch together, in sync\./i,
     name: 'discover',
     path: '/',
-  },
-  {
-    heading: /find the next room faster/i,
-    name: 'search',
-    path: `/search?q=${browserCheckSearchQuery}`,
   },
   {
     heading: /^log in$/i,

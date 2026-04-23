@@ -5,6 +5,7 @@ import { Link } from 'react-router-dom'
 import notFoundIllustrationUrl from '@/assets/404.svg'
 import { PageHero } from '@/components/layout/PageHero'
 import { PageMetadata } from '@/components/metadata/PageMetadata'
+import { dispatchRoomSearchFocus } from '@/components/navigation/roomSearch'
 
 export default function NotFoundPage(): JSX.Element {
   return (
@@ -28,8 +29,14 @@ export default function NotFoundPage(): JSX.Element {
           <Button component={Link} to="/" size="md">
             Return to discovery
           </Button>
-          <Anchor component={Link} to="/search">
-            Or search for a room
+          <Anchor
+            component="button"
+            onClick={() => {
+              dispatchRoomSearchFocus()
+            }}
+            type="button"
+          >
+            Or search from the navigation
           </Anchor>
         </Stack>
       </PageHero>
