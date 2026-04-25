@@ -73,7 +73,7 @@ export type PresenceUser = {
   phx_ref?: string
 }
 
-export type FriendRequest = {
+type FriendRequest = {
   friendee: string
 }
 
