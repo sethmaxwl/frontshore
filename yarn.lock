@@ -4744,7 +4744,7 @@ __metadata:
     globals: "npm:^17.5.0"
     husky: "npm:^9.1.7"
     jsdom: "npm:^29.0.2"
-    knip: "npm:^6.6.3"
+    knip: "npm:^6.7.0"
     lint-staged: "npm:^16.4.0"
     mantine-form-zod-resolver: "npm:^1.3.0"
     phoenix: "npm:^1.8.5"
@@ -5856,9 +5856,9 @@ __metadata:
   languageName: node
   linkType: hard
 
-"knip@npm:^6.6.3":
-  version: 6.6.3
-  resolution: "knip@npm:6.6.3"
+"knip@npm:^6.7.0":
+  version: 6.7.0
+  resolution: "knip@npm:6.7.0"
   dependencies:
     fdir: "npm:^6.5.0"
     formatly: "npm:^0.3.0"
@@ -5877,7 +5877,7 @@ __metadata:
   bin:
     knip: bin/knip.js
     knip-bun: bin/knip-bun.js
-  checksum: 10c0/7722bb4bc762ec3471788b7fd48f7daf04da577b36a7d5218c703bbfbdd9d6aeedc52b69ea5f1212bd91d2fb41a284bba394659de5bdca3ad69a86cc4febfee8
+  checksum: 10c0/35c13edc66e48cb696c196d0acb4622954041b4b11393e897433cf493bf46c1a591d51ae10911252aebd6424a9ce255f4476dcd9e85b9214e927606669a769b0
   languageName: node
   linkType: hard
 
