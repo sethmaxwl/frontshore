@@ -70,6 +70,22 @@ describe('rooms utils', () => {
     ])
   })
 
+  it('omits empty personalized sections from landing sections', () => {
+    const sections = buildRoomSections({
+      favoriteRooms: [],
+      friendNames: [],
+      rooms,
+      username: 'visitor',
+    })
+
+    expect(sections.map((section) => section.title)).toEqual(['Public Rooms'])
+    expect(sections[0]?.rooms.map((room) => room.route)).toEqual([
+      'cove-radio',
+      'aurora-lounge',
+      'blue-drift',
+    ])
+  })
+
   it('searches only public rooms by name', () => {
     expect(findMatchingRooms(rooms, 'co')).toEqual([rooms[3]])
     expect(findMatchingRooms(rooms, 'anchor')).toEqual([])

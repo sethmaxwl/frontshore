@@ -200,6 +200,26 @@ describe('PrimaryNavigation', () => {
     ).not.toBeInTheDocument()
   })
 
+  it('keeps authenticated navigation available while a session is unavailable', () => {
+    mockUseAuth.mockReturnValue({
+      isAuthenticated: true,
+      logout: mockLogout,
+      session: null,
+    })
+
+    renderNavigation()
+
+    expect(screen.getByRole('link', { name: 'Create Room' })).toHaveAttribute(
+      'href',
+      '/create-room',
+    )
+    expect(screen.getByRole('link', { name: 'Register' })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: 'Login' })).toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'captain' }),
+    ).not.toBeInTheDocument()
+  })
+
   it('marks the admin navigation item active for admin sessions', () => {
     mockUseAuth.mockReturnValue({
       isAuthenticated: true,
@@ -407,6 +427,35 @@ describe('PrimaryNavigation', () => {
     expect(screen.getByTestId('current-location')).toHaveTextContent('/')
   })
 
+  it('ignores submit while matching rooms are still loading', async () => {
+    const { promise, resolveRooms } = createDeferredRooms()
+
+    mockFetchRooms.mockReturnValue(promise)
+    renderNavigation()
+
+    const searchInput = screen.getByRole('searchbox', {
+      name: 'Search public rooms',
+    })
+    const searchForm = searchInput.closest('form')
+
+    if (!searchForm) {
+      throw new Error('Expected navigation search form to be rendered.')
+    }
+
+    fireEvent.focus(searchInput)
+    fireEvent.change(searchInput, { target: { value: 'blue' } })
+    await screen.findByText('Searching public rooms...')
+
+    fireEvent.submit(searchForm)
+
+    expect(screen.getByTestId('current-location')).toHaveTextContent('/')
+
+    await act(async () => {
+      resolveRooms([])
+      await Promise.resolve()
+    })
+  })
+
   it('shows an error state when room search cannot load rooms', async () => {
     mockFetchRooms.mockRejectedValue(new Error('Network unavailable'))
     renderNavigation()
@@ -470,11 +519,13 @@ describe('PrimaryNavigation', () => {
       name: 'Switch to dark theme',
     })
 
+    expect(themeButton).toHaveTextContent('☀')
+
     fireEvent.click(themeButton)
 
     expect(
       await screen.findByRole('button', { name: 'Switch to light theme' }),
-    ).toBeInTheDocument()
+    ).toHaveTextContent('☾')
   })
 
   it('labels the theme action for dark mode when the provider starts dark', () => {
@@ -482,6 +533,6 @@ describe('PrimaryNavigation', () => {
 
     expect(
       screen.getByRole('button', { name: 'Switch to light theme' }),
-    ).toBeInTheDocument()
+    ).toHaveTextContent('☾')
   })
 })
