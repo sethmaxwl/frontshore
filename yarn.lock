@@ -998,15 +998,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/modals@npm:^9.1.0":
-  version: 9.1.0
-  resolution: "@mantine/modals@npm:9.1.0"
+"@mantine/modals@npm:^9.1.1":
+  version: 9.1.1
+  resolution: "@mantine/modals@npm:9.1.1"
   peerDependencies:
-    "@mantine/core": 9.1.0
-    "@mantine/hooks": 9.1.0
+    "@mantine/core": 9.1.1
+    "@mantine/hooks": 9.1.1
     react: ^19.2.0
     react-dom: ^19.2.0
-  checksum: 10c0/cb055f4b600a630c785db0aecc376a0ecb1611bc7fb936622eea5d47b613d9e05a84c29d0fb3dd16339c433e31c315b18e228e90a4ff046cd862864f56fc25d0
+  checksum: 10c0/246729d0f93c867c50f4eb8019854a7fee8a1c4665295f50b1d735f666ff289507fb3328d40b5a07c27d44c15c31d9c679810c80d725888c663f5a8cacbb1dcd
   languageName: node
   linkType: hard
 
@@ -4714,7 +4714,7 @@ __metadata:
     "@mantine/core": "npm:^9.1.0"
     "@mantine/form": "npm:^9.1.0"
     "@mantine/hooks": "npm:^9.1.0"
-    "@mantine/modals": "npm:^9.1.0"
+    "@mantine/modals": "npm:^9.1.1"
     "@mantine/notifications": "npm:^9.1.0"
     "@playwright/test": "npm:^1.59.1"
     "@rolldown/plugin-babel": "npm:^0.2.3"
