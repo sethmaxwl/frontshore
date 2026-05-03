@@ -989,12 +989,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@mantine/hooks@npm:^9.1.0":
-  version: 9.1.0
-  resolution: "@mantine/hooks@npm:9.1.0"
+"@mantine/hooks@npm:^9.1.1":
+  version: 9.1.1
+  resolution: "@mantine/hooks@npm:9.1.1"
   peerDependencies:
     react: ^19.2.0
-  checksum: 10c0/e781c2c95caf263ef8c20c4ff71ba19e0d33125d2fea0bfa2bf4c52708780930994194e377d25ccf57ce70f78efeb9e282a66cf7035220ec58f563e8266ff566
+  checksum: 10c0/63189c4e2c67f296822dc6e844152cf2521878ba7aed1b6a99b4c34662b2f97f4f43d46a84772a38e5fbbf478c42ac76066bcde2089b71d9051eee734f44b4c1
   languageName: node
   linkType: hard
 
@@ -4713,7 +4713,7 @@ __metadata:
     "@lhci/cli": "npm:^0.15.1"
     "@mantine/core": "npm:^9.1.0"
     "@mantine/form": "npm:^9.1.0"
-    "@mantine/hooks": "npm:^9.1.0"
+    "@mantine/hooks": "npm:^9.1.1"
     "@mantine/modals": "npm:^9.1.0"
     "@mantine/notifications": "npm:^9.1.0"
     "@playwright/test": "npm:^1.59.1"
