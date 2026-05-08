@@ -81,6 +81,7 @@ export default defineConfig({
   test: {
     include: ['src/**/*.test.{ts,tsx}', 'src/**/*.spec.{ts,tsx}'],
     environment: 'jsdom',
+    execArgv: ['--no-experimental-webstorage'],
     setupFiles: './src/test/setup.ts',
     css: true,
     coverage: {
